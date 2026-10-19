@@ -12,12 +12,10 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="KashFlow Pro" />
 
-  <!-- Embedded SVG App Icon -->
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='115' fill='%230f172a'/%3E%3Crect x='96' y='136' width='320' height='240' rx='36' fill='%2310b981'/%3E%3Cpath d='M320 220h96v72h-96a36 36 0 0 1 0-72z' fill='%23059669'/%3E%3Ccircle cx='356' cy='256' r='16' fill='%23ffffff'/%3E%3C/svg%3E" />
-  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='115' fill='%230f172a'/%3E%3Crect x='96' y='136' width='320' height='240' rx='36' fill='%2310b981'/%3E%3Cpath d='M320 220h96v72h-96a36 36 0 0 1 0-72z' fill='%23059669'/%3E%3Ccircle cx='356' cy='256' r='16' fill='%23ffffff'/%3E%3C/svg%3E" />
-
-  <!-- Embedded Web App Manifest for Standalone Installation -->
-  <link rel="manifest" href='data:application/manifest+json,{"name":"KashFlow Pro","short_name":"KashFlow","start_url":".","display":"standalone","background_color":"#0f172a","theme_color":"#10b981","icons":[{"src":"data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 512 512%27%3E%3Crect width=%27512%27 height=%27512%27 rx=%27115%27 fill=%27%230f172a%27/%3E%3Crect x=%2796%27 y=%27136%27 width=%27320%27 height=%27240%27 rx=%2736%27 fill=%27%2310b981%27/%3E%3Cpath d=%27M320 220h96v72h-96a36 36 0 0 1 0-72z%27 fill=%27%23059669%27/%3E%3Ccircle cx=%27356%27 cy=%27256%27 r=%2716%27 fill=%27%23ffffff%27/%3E%3C/svg%3E","sizes":"512x512","type":"image/svg+xml","purpose":"any maskable"}]}' />
+  <!-- App Icons & External Manifest Link -->
+  <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/272/272525.png" />
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/272/272525.png" />
+  <link rel="manifest" href="./manifest.json" />
 
   <!-- Tailwind CSS & Chart.js CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -28,7 +26,6 @@
       -webkit-tap-highlight-color: transparent;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
-    /* Hide scrollbar for clean mobile tabs */
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
@@ -48,8 +45,12 @@
         </div>
       </div>
 
-      <!-- Controls: Currency & Data Backup -->
+      <!-- Controls: Install Button, Currency & Data Backup -->
       <div class="flex items-center gap-2">
+        <button id="installAppBtn" onclick="triggerInstall()" class="hidden bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs px-2.5 py-1.5 rounded-lg shadow transition">
+          📲 Install App
+        </button>
+
         <select id="currencySelect" onchange="changeCurrency(this.value)" class="bg-slate-800 border border-slate-700 text-xs font-medium rounded-lg px-2.5 py-1.5 text-slate-200 focus:outline-none focus:border-emerald-500">
           <option value="UGX">UGX (USh)</option>
           <option value="USD">USD ($)</option>
@@ -129,9 +130,8 @@
       </button>
     </div>
 
-    <!-- Visual Analytics Section (Pie Charts & 6-Month Bar Chart) -->
+    <!-- Visual Analytics Section -->
     <section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-      <!-- Doughnut Breakdown -->
       <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between">
         <div class="flex items-center justify-between mb-3">
           <h2 class="text-sm font-semibold text-white">Category Breakdown</h2>
@@ -149,7 +149,6 @@
         <div id="categoryLegend" class="mt-4 space-y-1.5 max-h-36 overflow-y-auto pr-1 text-xs"></div>
       </div>
 
-      <!-- 6-Month Trend Histogram -->
       <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 lg:col-span-2 flex flex-col justify-between">
         <div class="flex items-center justify-between mb-3">
           <div>
@@ -181,13 +180,12 @@
 
   <!-- MODAL: Add / Edit Transaction -->
   <div id="txModal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-t-3xl sm:rounded-2xl p-5 space-y-4 animate-fade-in">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-t-3xl sm:rounded-2xl p-5 space-y-4">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
         <h3 class="font-bold text-base text-white">Log Transaction</h3>
         <button onclick="closeTransactionModal()" class="text-slate-400 hover:text-white text-lg">✕</button>
       </div>
 
-      <!-- Type Switcher -->
       <div class="grid grid-cols-2 gap-2 bg-slate-800 p-1 rounded-xl">
         <button type="button" id="btnTypeExpense" onclick="selectTxType('expense')" class="py-2 rounded-lg text-xs font-semibold bg-rose-500 text-white transition">
           ▼ Expense
@@ -228,4 +226,528 @@
   </div>
 
   <!-- MODAL: Custom Categories Manager -->
-  <div id="catModal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm
+  <div id="catModal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-t-3xl sm:rounded-2xl p-5 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="font-bold text-base text-white">Manage Categories</h3>
+        <button onclick="closeCategoryModal()" class="text-slate-400 hover:text-white text-lg">✕</button>
+      </div>
+
+      <form onsubmit="addCategory(event)" class="space-y-3 text-xs bg-slate-800/50 p-3 rounded-xl border border-slate-800">
+        <div class="font-semibold text-slate-300">Add New Category</div>
+        <div class="grid grid-cols-3 gap-2">
+          <input id="newCatName" type="text" required placeholder="Category name..." class="col-span-2 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white" />
+          <select id="newCatType" class="bg-slate-800 border border-slate-700 rounded-lg px-2 py-2 text-white">
+            <option value="expense">Expense</option>
+            <option value="income">Revenue</option>
+          </select>
+        </div>
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <label class="text-slate-400">Icon:</label>
+            <input id="newCatIcon" type="text" value="🏷️" maxlength="2" class="w-12 text-center bg-slate-800 border border-slate-700 rounded-lg py-1.5 text-sm" />
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="text-slate-400">Color:</label>
+            <input id="newCatColor" type="color" value="#10b981" class="w-8 h-8 rounded cursor-pointer bg-transparent border-0" />
+          </div>
+          <button type="submit" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-4 py-2 rounded-lg">
+            + Add
+          </button>
+        </div>
+      </form>
+
+      <div id="customCategoriesList" class="max-h-60 overflow-y-auto divide-y divide-slate-800 text-xs"></div>
+    </div>
+  </div>
+
+  <script>
+    // --- SERVICE WORKER & PWA INSTALL PROMPT ---
+    let deferredPrompt = null;
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW registration failed:', err));
+      });
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      document.getElementById('installAppBtn').classList.remove('hidden');
+    });
+
+    async function triggerInstall() {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        document.getElementById('installAppBtn').classList.add('hidden');
+      }
+      deferredPrompt = null;
+    }
+
+    // --- STATE & DEFAULT DATA ---
+    const STORAGE_KEY_TX = 'kashflow_transactions_v1';
+    const STORAGE_KEY_CAT = 'kashflow_categories_v1';
+    const STORAGE_KEY_CUR = 'kashflow_currency_v1';
+
+    const DEFAULT_CATEGORIES = [
+      { id: 'c1', name: 'Groceries & Food', type: 'expense', icon: '🛒', color: '#f43f5e' },
+      { id: 'c2', name: 'Transport & Fuel', type: 'expense', icon: '⛽', color: '#fb923c' },
+      { id: 'c3', name: 'Utilities & Bills', type: 'expense', icon: '⚡', color: '#eab308' },
+      { id: 'c4', name: 'Studio & Gear', type: 'expense', icon: '🎸', color: '#a855f7' },
+      { id: 'c5', name: 'Dining & Leisure', type: 'expense', icon: '🍽️', color: '#ec4899' },
+      { id: 'c6', name: 'Housing & Rent', type: 'expense', icon: '🏠', color: '#6366f1' },
+      { id: 'c7', name: 'Salary & Retainer', type: 'income', icon: '💼', color: '#10b981' },
+      { id: 'c8', name: 'Client / Project', type: 'income', icon: '🎬', color: '#14b8a6' },
+      { id: 'c9', name: 'Investments & Dividends', type: 'income', icon: '📈', color: '#3b82f6' }
+    ];
+
+    const CURRENCY_SYMBOLS = { UGX: 'USh ', USD: '$', KES: 'KSh ', EUR: '€' };
+
+    let transactions = JSON.parse(localStorage.getItem(STORAGE_KEY_TX)) || [];
+    let categories = JSON.parse(localStorage.getItem(STORAGE_KEY_CAT)) || DEFAULT_CATEGORIES;
+    let currentCurrency = localStorage.getItem(STORAGE_KEY_CUR) || 'UGX';
+    let currentTxType = 'expense';
+    let currentPieMode = 'expense';
+
+    let pieChartInstance = null;
+    let barChartInstance = null;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('currencySelect').value = currentCurrency;
+      document.getElementById('txDate').valueAsDate = new Date();
+      populateMonthFilter();
+      renderAll();
+    });
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY_TX, JSON.stringify(transactions));
+      localStorage.setItem(STORAGE_KEY_CAT, JSON.stringify(categories));
+      localStorage.setItem(STORAGE_KEY_CUR, currentCurrency);
+    }
+
+    function formatMoney(amount) {
+      const sym = CURRENCY_SYMBOLS[currentCurrency] || '';
+      const isWhole = currentCurrency === 'UGX' || currentCurrency === 'KES';
+      return sym + Number(amount || 0).toLocaleString(undefined, {
+        minimumFractionDigits: isWhole ? 0 : 2,
+        maximumFractionDigits: isWhole ? 0 : 2
+      });
+    }
+
+    function changeCurrency(val) {
+      currentCurrency = val;
+      saveState();
+      renderAll();
+    }
+
+    function populateMonthFilter() {
+      const select = document.getElementById('monthFilter');
+      const currentVal = select.value;
+      const months = new Set();
+      transactions.forEach(t => {
+        if (t.date) months.add(t.date.slice(0, 7));
+      });
+      const sorted = Array.from(months).sort().reverse();
+      select.innerHTML = '<option value="ALL">All Time</option>';
+      sorted.forEach(m => {
+        const [y, mo] = m.split('-');
+        const label = new Date(y, mo - 1, 1).toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
+        select.innerHTML += `<option value="${m}">${label}</option>`;
+      });
+      if ([...select.options].some(o => o.value === currentVal)) select.value = currentVal;
+    }
+
+    function getFilteredTransactions() {
+      const month = document.getElementById('monthFilter').value;
+      const type = document.getElementById('typeFilter').value;
+      const query = document.getElementById('searchInput').value.trim().toLowerCase();
+
+      return transactions.filter(t => {
+        if (month !== 'ALL' && !t.date.startsWith(month)) return false;
+        if (type !== 'ALL' && t.type !== type) return false;
+        if (query) {
+          const cat = categories.find(c => c.id === t.categoryId);
+          const catName = cat ? cat.name.toLowerCase() : '';
+          const note = (t.note || '').toLowerCase();
+          if (!catName.includes(query) && !note.includes(query)) return false;
+        }
+        return true;
+      }).sort((a, b) => new Date(b.date) - new Date(a.date));
+    }
+
+    function renderAll() {
+      const filtered = getFilteredTransactions();
+
+      let totalIn = 0, totalOut = 0;
+      filtered.forEach(t => {
+        if (t.type === 'income') totalIn += Number(t.amount);
+        else totalOut += Number(t.amount);
+      });
+      const net = totalIn - totalOut;
+      const savingsRate = totalIn > 0 ? Math.round((net / totalIn) * 100) : 0;
+
+      document.getElementById('netBalanceDisplay').textContent = formatMoney(net);
+      document.getElementById('totalIncomeDisplay').textContent = formatMoney(totalIn);
+      document.getElementById('totalExpenseDisplay').textContent = formatMoney(totalOut);
+      document.getElementById('savingsRateBadge').textContent = `${savingsRate}% saved`;
+
+      renderTransactionsList(filtered);
+      renderPieChart(filtered);
+      renderBarChart();
+    }
+
+    function renderTransactionsList(list) {
+      const container = document.getElementById('transactionsList');
+      document.getElementById('txCountBadge').textContent = `${list.length} ${list.length === 1 ? 'entry' : 'entries'}`;
+
+      if (list.length === 0) {
+        container.innerHTML = `
+          <div class="p-8 text-center text-xs text-slate-500">
+            No transactions found. Tap <b>"+ Log Transaction"</b> to add your first entry.
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = list.map(t => {
+        const cat = categories.find(c => c.id === t.categoryId) || { name: 'Uncategorized', icon: '🏷️', color: '#64748b' };
+        const isInc = t.type === 'income';
+        return `
+          <div class="px-4 py-3 flex items-center justify-between hover:bg-slate-800/40 transition">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-9 h-9 rounded-xl flex items-center justify-center text-base shrink-0" style="background:${cat.color}22; border:1px solid ${cat.color}55">
+                ${cat.icon}
+              </div>
+              <div class="min-w-0">
+                <div class="text-xs font-semibold text-white truncate">${cat.name}</div>
+                <div class="text-[11px] text-slate-400 truncate">${t.note || 'No description'} • ${t.date}</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-3 shrink-0 ml-2">
+              <span class="text-xs font-bold ${isInc ? 'text-emerald-400' : 'text-rose-400'}">
+                ${isInc ? '+' : '-'}${formatMoney(t.amount)}
+              </span>
+              <button onclick="deleteTransaction('${t.id}')" class="text-slate-500 hover:text-rose-400 text-xs px-1.5 py-1" title="Delete">
+                🗑️
+              </button>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function setPieMode(mode) {
+      currentPieMode = mode;
+      const btnExp = document.getElementById('pieToggleExpense');
+      const btnInc = document.getElementById('pieToggleIncome');
+      if (mode === 'expense') {
+        btnExp.className = 'px-2.5 py-1 rounded-md bg-rose-500 text-white font-medium transition';
+        btnInc.className = 'px-2.5 py-1 rounded-md text-slate-400 hover:text-white transition';
+      } else {
+        btnInc.className = 'px-2.5 py-1 rounded-md bg-emerald-500 text-slate-950 font-semibold transition';
+        btnExp.className = 'px-2.5 py-1 rounded-md text-slate-400 hover:text-white transition';
+      }
+      renderPieChart(getFilteredTransactions());
+    }
+
+    function renderPieChart(filtered) {
+      const modeItems = filtered.filter(t => t.type === currentPieMode);
+      const totalsByCat = {};
+      let grandTotal = 0;
+
+      modeItems.forEach(t => {
+        totalsByCat[t.categoryId] = (totalsByCat[t.categoryId] || 0) + Number(t.amount);
+        grandTotal += Number(t.amount);
+      });
+
+      const entries = Object.entries(totalsByCat)
+        .map(([catId, total]) => {
+          const cat = categories.find(c => c.id === catId) || { name: 'Other', color: '#64748b', icon: '🏷️' };
+          return { ...cat, total };
+        })
+        .sort((a, b) => b.total - a.total);
+
+      const emptyEl = document.getElementById('pieEmptyState');
+      const legendEl = document.getElementById('categoryLegend');
+
+      if (entries.length === 0) {
+        emptyEl.classList.remove('hidden');
+        legendEl.innerHTML = '';
+        if (pieChartInstance) pieChartInstance.destroy();
+        return;
+      }
+      emptyEl.classList.add('hidden');
+
+      const ctx = document.getElementById('categoryPieChart').getContext('2d');
+      if (pieChartInstance) pieChartInstance.destroy();
+
+      pieChartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: entries.map(e => e.name),
+          datasets: [{
+            data: entries.map(e => e.total),
+            backgroundColor: entries.map(e => e.color),
+            borderColor: '#0f172a',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '66%',
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => {
+                  const val = ctx.parsed;
+                  const pct = grandTotal > 0 ? ((val / grandTotal) * 100).toFixed(1) : 0;
+                  return ` ${ctx.label}: ${formatMoney(val)} (${pct}%)`;
+                }
+              }
+            }
+          }
+        }
+      });
+
+      legendEl.innerHTML = entries.map(e => {
+        const pct = grandTotal > 0 ? Math.round((e.total / grandTotal) * 100) : 0;
+        return `
+          <div class="flex items-center justify-between py-1">
+            <div class="flex items-center gap-2 truncate">
+              <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background:${e.color}"></span>
+              <span class="text-slate-300 truncate">${e.icon} ${e.name}</span>
+            </div>
+            <div class="text-slate-400 font-medium shrink-0 ml-2">${formatMoney(e.total)} <span class="text-slate-500">(${pct}%)</span></div>
+          </div>`;
+      }).join('');
+    }
+
+    function renderBarChart() {
+      const months = [];
+      const now = new Date();
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        const label = d.toLocaleDateString(undefined, { month: 'short' });
+        months.push({ key, label, income: 0, expense: 0 });
+      }
+
+      transactions.forEach(t => {
+        if (!t.date) return;
+        const mKey = t.date.slice(0, 7);
+        const bucket = months.find(m => m.key === mKey);
+        if (bucket) {
+          if (t.type === 'income') bucket.income += Number(t.amount);
+          else bucket.expense += Number(t.amount);
+        }
+      });
+
+      const ctx = document.getElementById('trendBarChart').getContext('2d');
+      if (barChartInstance) barChartInstance.destroy();
+
+      barChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: months.map(m => m.label),
+          datasets: [
+            {
+              label: 'Revenue',
+              data: months.map(m => m.income),
+              backgroundColor: '#10b981',
+              borderRadius: 6
+            },
+            {
+              label: 'Expenses',
+              data: months.map(m => m.expense),
+              backgroundColor: '#f43f5e',
+              borderRadius: 6
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { ticks: { color: '#94a3b8' }, grid: { display: false } },
+            y: { ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } }
+          },
+          plugins: {
+            legend: { labels: { color: '#cbd5e1', boxWidth: 12 } },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => ` ${ctx.dataset.label}: ${formatMoney(ctx.parsed.y)}`
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function openTransactionModal() {
+      document.getElementById('txModal').classList.remove('hidden');
+      selectTxType(currentTxType);
+    }
+
+    function closeTransactionModal() {
+      document.getElementById('txModal').classList.add('hidden');
+      document.getElementById('txForm').reset();
+      document.getElementById('txDate').valueAsDate = new Date();
+    }
+
+    function selectTxType(type) {
+      currentTxType = type;
+      const btnExp = document.getElementById('btnTypeExpense');
+      const btnInc = document.getElementById('btnTypeIncome');
+      if (type === 'expense') {
+        btnExp.className = 'py-2 rounded-lg text-xs font-semibold bg-rose-500 text-white transition';
+        btnInc.className = 'py-2 rounded-lg text-xs font-semibold text-slate-300 hover:text-white transition';
+      } else {
+        btnInc.className = 'py-2 rounded-lg text-xs font-semibold bg-emerald-500 text-slate-950 transition';
+        btnExp.className = 'py-2 rounded-lg text-xs font-semibold text-slate-300 hover:text-white transition';
+      }
+
+      const catSelect = document.getElementById('txCategory');
+      const filteredCats = categories.filter(c => c.type === type);
+      catSelect.innerHTML = filteredCats.map(c => `<option value="${c.id}">${c.icon} ${c.name}</option>`).join('');
+    }
+
+    function saveTransaction(e) {
+      e.preventDefault();
+      const amount = parseFloat(document.getElementById('txAmount').value);
+      const categoryId = document.getElementById('txCategory').value;
+      const date = document.getElementById('txDate').value;
+      const note = document.getElementById('txNote').value.trim();
+
+      if (!amount || amount <= 0) return;
+
+      transactions.push({
+        id: 'tx_' + Date.now(),
+        type: currentTxType,
+        amount,
+        categoryId,
+        date,
+        note
+      });
+
+      saveState();
+      populateMonthFilter();
+      closeTransactionModal();
+      renderAll();
+    }
+
+    function deleteTransaction(id) {
+      if (!confirm('Delete this transaction?')) return;
+      transactions = transactions.filter(t => t.id !== id);
+      saveState();
+      populateMonthFilter();
+      renderAll();
+    }
+
+    function openCategoryModal() {
+      document.getElementById('catModal').classList.remove('hidden');
+      renderCategoriesList();
+    }
+
+    function closeCategoryModal() {
+      document.getElementById('catModal').classList.add('hidden');
+    }
+
+    function renderCategoriesList() {
+      const list = document.getElementById('customCategoriesList');
+      list.innerHTML = categories.map(c => `
+        <div class="py-2.5 flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <span class="w-7 h-7 rounded-lg flex items-center justify-center text-sm" style="background:${c.color}22; border:1px solid ${c.color}55">${c.icon}</span>
+            <div>
+              <div class="font-medium text-white">${c.name}</div>
+              <div class="text-[10px] uppercase tracking-wider ${c.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}">${c.type}</div>
+            </div>
+          </div>
+          <button onclick="deleteCategory('${c.id}')" class="text-slate-500 hover:text-rose-400 px-2">✕</button>
+        </div>
+      `).join('');
+    }
+
+    function addCategory(e) {
+      e.preventDefault();
+      const name = document.getElementById('newCatName').value.trim();
+      const type = document.getElementById('newCatType').value;
+      const icon = document.getElementById('newCatIcon').value.trim() || '🏷️';
+      const color = document.getElementById('newCatColor').value;
+
+      if (!name) return;
+      categories.push({ id: 'cat_' + Date.now(), name, type, icon, color });
+      saveState();
+      document.getElementById('newCatName').value = '';
+      renderCategoriesList();
+      renderAll();
+    }
+
+    function deleteCategory(id) {
+      if (categories.length <= 2) return alert('Keep at least one category.');
+      categories = categories.filter(c => c.id !== id);
+      saveState();
+      renderCategoriesList();
+      renderAll();
+    }
+
+    function exportCSV() {
+      if (transactions.length === 0) return alert('No transactions to export.');
+      const headers = ['Date', 'Type', 'Category', 'Amount', 'Currency', 'Note'];
+      const rows = transactions.map(t => {
+        const cat = categories.find(c => c.id === t.categoryId);
+        return [
+          t.date,
+          t.type,
+          `"${cat ? cat.name : 'Uncategorized'}"`,
+          t.amount,
+          currentCurrency,
+          `"${(t.note || '').replace(/"/g, '""')}"`
+        ].join(',');
+      });
+      const csv = [headers.join(','), ...rows].join('\n');
+      downloadFile(csv, `kashflow_export_${new Date().toISOString().slice(0,10)}.csv`, 'text/csv');
+    }
+
+    function backupJSON() {
+      const payload = JSON.stringify({ transactions, categories, currentCurrency }, null, 2);
+      downloadFile(payload, `kashflow_backup_${new Date().toISOString().slice(0,10)}.json`, 'application/json');
+    }
+
+    function restoreJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (Array.isArray(data.transactions)) transactions = data.transactions;
+          if (Array.isArray(data.categories)) categories = data.categories;
+          if (data.currentCurrency) currentCurrency = data.currentCurrency;
+          saveState();
+          document.getElementById('currencySelect').value = currentCurrency;
+          populateMonthFilter();
+          renderAll();
+          alert('Backup restored successfully!');
+        } catch (err) {
+          alert('Invalid backup JSON file.');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function downloadFile(content, fileName, mimeType) {
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>
