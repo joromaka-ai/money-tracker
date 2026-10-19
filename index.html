@@ -17,7 +17,7 @@
   <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/272/272525.png" />
   <link rel="manifest" href="./manifest.json" />
 
-  <!-- Tailwind CSS, Chart.js & Tesseract.js -->
+  <!-- Tailwind CSS, Chart.js & Tesseract.js (On-Device Receipt OCR) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
@@ -48,7 +48,7 @@
 
       <!-- Controls -->
       <div class="flex items-center gap-2">
-        <button type="button" id="installAppBtn" onclick="triggerInstall()" class="hidden bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs px-2.5 py-1.5 rounded-lg shadow transition">
+        <button id="installAppBtn" onclick="triggerInstall()" class="hidden bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs px-2.5 py-1.5 rounded-lg shadow transition">
           📲 Install
         </button>
 
@@ -59,22 +59,22 @@
           <option value="EUR">EUR (€)</option>
         </select>
 
-        <button type="button" onclick="openCategoryModal()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium px-2.5 py-1.5 rounded-lg transition">
+        <button onclick="openCategoryModal()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium px-2.5 py-1.5 rounded-lg transition">
           ⚙️ Categories
         </button>
 
-        <div class="relative">
-          <button type="button" onclick="toggleDataMenu(event)" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium px-2.5 py-1.5 rounded-lg transition">
+        <div class="relative group">
+          <button class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium px-2.5 py-1.5 rounded-lg transition">
             Data ▾
           </button>
-          <div id="dataDropdownMenu" class="hidden absolute right-0 mt-1 w-48 bg-slate-800 border border-slate-700 rounded-xl shadow-xl py-1 z-50 text-xs">
-            <button type="button" onclick="exportCSV()" class="w-full text-left px-3 py-2.5 hover:bg-slate-700/70 flex items-center gap-2">📊 Export CSV</button>
-            <button type="button" onclick="backupJSON()" class="w-full text-left px-3 py-2.5 hover:bg-slate-700/70 flex items-center gap-2">💾 Backup JSON</button>
-            <label class="w-full text-left px-3 py-2.5 hover:bg-slate-700/70 flex items-center gap-2 cursor-pointer">
+          <div class="hidden group-hover:block hover:block absolute right-0 mt-1 w-44 bg-slate-800 border border-slate-700 rounded-xl shadow-xl py-1 z-50 text-xs">
+            <button onclick="exportCSV()" class="w-full text-left px-3 py-2 hover:bg-slate-700/70 flex items-center gap-2">📊 Export CSV</button>
+            <button onclick="backupJSON()" class="w-full text-left px-3 py-2 hover:bg-slate-700/70 flex items-center gap-2">💾 Backup JSON</button>
+            <label class="w-full text-left px-3 py-2 hover:bg-slate-700/70 flex items-center gap-2 cursor-pointer">
               📂 Restore JSON
               <input type="file" accept=".json" class="hidden" onchange="restoreJSON(event)" />
             </label>
-            <button type="button" onclick="syncDefaultBudget()" class="w-full text-left px-3 py-2.5 hover:bg-slate-700/70 text-emerald-400 flex items-center gap-2 border-t border-slate-700/60">
+            <button onclick="syncDefaultBudget()" class="w-full text-left px-3 py-2 hover:bg-slate-700/70 text-emerald-400 flex items-center gap-2 border-t border-slate-700/60">
               🔄 Reset Default Budget
             </button>
           </div>
@@ -87,19 +87,19 @@
   <main class="max-w-5xl mx-auto px-4 pt-4 space-y-5">
 
     <!-- Navigation Tabs & Period Filter -->
-    <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-900 border border-slate-800 rounded-2xl p-2 relative z-20">
-      <div class="flex bg-slate-800/80 p-1 rounded-xl text-xs font-semibold w-full sm:w-auto">
-        <button type="button" id="tabBtnDashboard" onclick="switchView('dashboard')" class="flex-1 sm:flex-initial px-3.5 py-2 rounded-lg bg-emerald-500 text-slate-950 font-bold transition cursor-pointer">
+    <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-900 border border-slate-800 rounded-2xl p-2">
+      <div class="flex bg-slate-800/80 p-1 rounded-xl text-xs font-semibold">
+        <button id="tabBtnDashboard" onclick="switchView('dashboard')" class="px-3.5 py-1.5 rounded-lg bg-emerald-500 text-slate-950 transition">
           📊 Overview & Ledger
         </button>
-        <button type="button" id="tabBtnBudget" onclick="switchView('budget')" class="flex-1 sm:flex-initial px-3.5 py-2 rounded-lg text-slate-300 hover:text-white transition cursor-pointer">
+        <button id="tabBtnBudget" onclick="switchView('budget')" class="px-3.5 py-1.5 rounded-lg text-slate-300 hover:text-white transition">
           🎯 50/30/20 & Budget Plan
         </button>
       </div>
 
-      <div class="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto">
+      <div class="flex items-center gap-2">
         <select id="monthFilter" onchange="renderAll()" class="bg-slate-800 border border-slate-700 text-xs rounded-xl px-3 py-2 text-slate-200 font-medium"></select>
-        <button type="button" onclick="openTransactionModal()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs px-3.5 py-2 rounded-xl shadow-lg shadow-emerald-500/20 transition flex items-center gap-1 cursor-pointer">
+        <button onclick="openTransactionModal()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs px-3.5 py-2 rounded-xl shadow-lg shadow-emerald-500/20 transition flex items-center gap-1">
           <span>＋</span> Log / Scan
         </button>
       </div>
@@ -110,13 +110,13 @@
       <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5">
         <div class="text-[11px] text-slate-400 mb-1">Total Revenue</div>
         <div id="totalIncomeDisplay" class="text-lg sm:text-xl font-bold text-emerald-400 truncate">USh 0</div>
-        <div class="text-[10px] text-slate-500 mt-0.5">Actual Inflow</div>
+        <div id="incomeSubtext" class="text-[10px] text-slate-500 mt-0.5">Actual Inflow</div>
       </div>
 
       <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5">
         <div class="text-[11px] text-slate-400 mb-1">Total Outflow</div>
         <div id="totalExpenseDisplay" class="text-lg sm:text-xl font-bold text-rose-400 truncate">USh 0</div>
-        <div class="text-[10px] text-slate-500 mt-0.5">Expenses + Savings</div>
+        <div id="expenseSubtext" class="text-[10px] text-slate-500 mt-0.5">Expenses + Savings</div>
       </div>
 
       <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5">
@@ -132,7 +132,7 @@
       </div>
     </section>
 
-    <!-- 50 / 30 / 20 RULE LIVE SUMMARY BAR -->
+    <!-- 50 / 30 / 20 RULE LIVE SUMMARY BAR (Visible on both tabs) -->
     <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
       <div class="flex flex-wrap items-center justify-between gap-2">
         <div>
@@ -144,7 +144,9 @@
         </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1" id="ruleCardsContainer"></div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1" id="ruleCardsContainer">
+        <!-- Populated dynamically via JS -->
+      </div>
     </section>
 
     <!-- ==================== VIEW 1: DASHBOARD & LEDGER ==================== -->
@@ -155,8 +157,8 @@
           <div class="flex items-center justify-between mb-3">
             <h2 class="text-sm font-semibold text-white">Category Breakdown</h2>
             <div class="flex bg-slate-800 p-0.5 rounded-lg text-[11px]">
-              <button type="button" id="pieToggleExpense" onclick="setPieMode('expense')" class="px-2.5 py-1 rounded-md bg-rose-500 text-white font-medium transition">Outflow</button>
-              <button type="button" id="pieToggleIncome" onclick="setPieMode('income')" class="px-2.5 py-1 rounded-md text-slate-400 hover:text-white transition">Revenue</button>
+              <button id="pieToggleExpense" onclick="setPieMode('expense')" class="px-2.5 py-1 rounded-md bg-rose-500 text-white font-medium transition">Outflow</button>
+              <button id="pieToggleIncome" onclick="setPieMode('income')" class="px-2.5 py-1 rounded-md text-slate-400 hover:text-white transition">Revenue</button>
             </div>
           </div>
           <div class="relative h-52 flex items-center justify-center">
@@ -217,7 +219,7 @@
           <p class="text-xs text-slate-400">Tap any planned amount or 50/30/20 group below to adjust your monthly targets immediately.</p>
         </div>
         <div class="flex items-center gap-2">
-          <button type="button" onclick="openCategoryModal()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs px-3.5 py-2 rounded-xl transition">
+          <button onclick="openCategoryModal()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs px-3.5 py-2 rounded-xl transition">
             + Add Budget Category
           </button>
         </div>
@@ -230,7 +232,7 @@
   </main>
 
   <!-- Floating Action Button for Mobile -->
-  <button type="button" onclick="openTransactionModal()" class="sm:hidden fixed bottom-5 right-5 z-40 w-14 h-14 rounded-full bg-emerald-500 text-slate-950 shadow-xl shadow-emerald-500/30 flex items-center justify-center text-2xl font-bold active:scale-95 transition">
+  <button onclick="openTransactionModal()" class="sm:hidden fixed bottom-5 right-5 z-40 w-14 h-14 rounded-full bg-emerald-500 text-slate-950 shadow-xl shadow-emerald-500/30 flex items-center justify-center text-2xl font-bold active:scale-95 transition">
     ＋
   </button>
 
@@ -239,7 +241,7 @@
     <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-t-3xl sm:rounded-2xl p-5 space-y-3.5 my-auto max-h-[92vh] overflow-y-auto">
       <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
         <h3 id="txModalTitle" class="font-bold text-base text-white">Log Transaction</h3>
-        <button type="button" onclick="closeTransactionModal()" class="text-slate-400 hover:text-white text-lg">✕</button>
+        <button onclick="closeTransactionModal()" class="text-slate-400 hover:text-white text-lg">✕</button>
       </div>
 
       <!-- RECEIPT CAMERA / UPLOAD & OCR BANNER -->
@@ -323,7 +325,7 @@
     <div class="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-t-3xl sm:rounded-2xl p-5 space-y-4 max-h-[90vh] flex flex-col">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
         <h3 class="font-bold text-base text-white">Add / Edit Categories & Planned Budget</h3>
-        <button type="button" onclick="closeCategoryModal()" class="text-slate-400 hover:text-white text-lg">✕</button>
+        <button onclick="closeCategoryModal()" class="text-slate-400 hover:text-white text-lg">✕</button>
       </div>
 
       <form onsubmit="addCategory(event)" class="space-y-3 text-xs bg-slate-800/50 p-3.5 rounded-xl border border-slate-800 shrink-0">
@@ -374,7 +376,7 @@
     <div class="max-w-lg w-full flex flex-col items-center space-y-3" onclick="event.stopPropagation()">
       <div class="w-full flex items-center justify-between text-xs text-slate-300">
         <span id="viewerCaption" class="font-semibold">Receipt Image</span>
-        <button type="button" onclick="document.getElementById('receiptViewerModal').classList.add('hidden')" class="bg-slate-800 px-3 py-1.5 rounded-lg text-white">✕ Close</button>
+        <button onclick="document.getElementById('receiptViewerModal').classList.add('hidden')" class="bg-slate-800 px-3 py-1.5 rounded-lg text-white">✕ Close</button>
       </div>
       <img id="viewerFullImg" src="" alt="Full Receipt" class="max-h-[80vh] w-auto rounded-2xl border border-slate-700 shadow-2xl object-contain" />
     </div>
@@ -385,9 +387,7 @@
     let deferredPrompt = null;
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').then(reg => {
-          reg.update();
-        }).catch(err => console.log('SW registration failed:', err));
+        navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW registration failed:', err));
       });
     }
     window.addEventListener('beforeinstallprompt', (e) => {
@@ -403,24 +403,16 @@
       deferredPrompt = null;
     }
 
-    function toggleDataMenu(e) {
-      e.stopPropagation();
-      document.getElementById('dataDropdownMenu').classList.toggle('hidden');
-    }
-    window.addEventListener('click', () => {
-      const menu = document.getElementById('dataDropdownMenu');
-      if (menu) menu.classList.add('hidden');
-    });
-
     // --- STORAGE KEYS & PRE-LOADED USER BUDGET ---
     const STORAGE_KEY_TX = 'kashflow_transactions_v1';
     const STORAGE_KEY_CAT = 'kashflow_categories_v1';
     const STORAGE_KEY_CUR = 'kashflow_currency_v1';
-    const STORAGE_KEY_SEEDED = 'kashflow_budget_seeded_v3';
+    const STORAGE_KEY_SEEDED = 'kashflow_budget_seeded_v2';
 
+    // Exact 23 Categories from User's Attached Monthly Budget + Revenue Categories
     const USER_BUDGET_CATEGORIES = [
       // 50% NEEDS (Planned: 1,683,500 UGX)
-      { id: 'b_rent', name: 'Rent', type: 'expense', bucket: 'needs', budget: 500000, icon: '🏠', color: '#6366f1' },
+      { id: 'b_rent', name: 'Rent', type: 'expense', bucket: 'needs', budget: 500000, icon: '🏠', color: '#6366f1 Keywords: rent landlord house apartment' },
       { id: 'b_transport', name: 'Transport', type: 'expense', bucket: 'needs', budget: 280000, icon: '⛽', color: '#fb923c' },
       { id: 'b_phone', name: 'Phone', type: 'expense', bucket: 'needs', budget: 20000, icon: '📱', color: '#38bdf8' },
       { id: 'b_internet', name: 'Internet', type: 'expense', bucket: 'needs', budget: 123500, icon: '🌐', color: '#0ea5e9' },
@@ -453,59 +445,47 @@
       { id: 'inc_salary', name: 'Salary & Retainer', type: 'income', bucket: 'income', budget: 0, icon: '💼', color: '#10b981' },
       { id: 'inc_client', name: 'Client / Project', type: 'income', bucket: 'income', budget: 0, icon: '🎬', color: '#14b8a6' },
       { id: 'inc_dividends', name: 'Investment Returns', type: 'income', bucket: 'income', budget: 0, icon: '💰', color: '#3b82f6' }
-    ];
+    ].map(c => ({ ...c, color: c.color.split(' ')[0] }));
 
     const CURRENCY_SYMBOLS = { UGX: 'USh ', USD: '$', KES: 'KSh ', EUR: '€' };
 
-    let transactions = [];
-    let categories = [];
-    let currentCurrency = 'UGX';
+    let transactions = JSON.parse(localStorage.getItem(STORAGE_KEY_TX)) || [];
+    let categories = JSON.parse(localStorage.getItem(STORAGE_KEY_CAT)) || [];
+    let currentCurrency = localStorage.getItem(STORAGE_KEY_CUR) || 'UGX';
 
-    try {
-      transactions = JSON.parse(localStorage.getItem(STORAGE_KEY_TX)) || [];
-      categories = JSON.parse(localStorage.getItem(STORAGE_KEY_CAT)) || [];
-      currentCurrency = localStorage.getItem(STORAGE_KEY_CUR) || 'UGX';
-    } catch (e) {
-      transactions = [];
-      categories = [];
-    }
-
+    // Seed or upgrade categories with the user's 23 budget items
     function ensureBudgetCategoriesSeeded() {
       const alreadySeeded = localStorage.getItem(STORAGE_KEY_SEEDED);
-      if (!alreadySeeded || !Array.isArray(categories) || categories.length === 0) {
+      if (!alreadySeeded || categories.length === 0) {
+        const existingByName = new Map(categories.map(c => [c.name.toLowerCase(), c]));
         const merged = [...USER_BUDGET_CATEGORIES];
-        if (Array.isArray(categories)) {
-          categories.forEach(oldCat => {
-            if (!oldCat || !oldCat.name) return;
-            const match = merged.find(m => m.name.toLowerCase() === oldCat.name.toLowerCase());
-            if (!match) {
-              merged.push({
-                id: oldCat.id || ('cat_' + Date.now() + Math.random()),
-                name: oldCat.name,
-                type: oldCat.type || 'expense',
-                bucket: oldCat.bucket || (oldCat.type === 'income' ? 'income' : 'needs'),
-                budget: Number(oldCat.budget || 0),
-                icon: oldCat.icon || '🏷️',
-                color: (oldCat.color || '#10b981').split(' ')[0]
-              });
-            } else {
-              transactions.forEach(t => {
-                if (t.categoryId === oldCat.id) t.categoryId = match.id;
-              });
-            }
-          });
-        }
+
+        // Keep any custom categories the user previously created
+        categories.forEach(oldCat => {
+          const match = merged.find(m => m.name.toLowerCase() === oldCat.name.toLowerCase());
+          if (!match) {
+            merged.push({
+              ...oldCat,
+              bucket: oldCat.bucket || (oldCat.type === 'income' ? 'income' : 'needs'),
+              budget: Number(oldCat.budget || 0)
+            });
+          } else {
+            // Re-point any transactions using old category ID to the new standardized ID
+            transactions.forEach(t => {
+              if (t.categoryId === oldCat.id) t.categoryId = match.id;
+            });
+          }
+        });
+
         categories = merged;
         localStorage.setItem(STORAGE_KEY_SEEDED, 'true');
         saveState();
       } else {
+        // Ensure every category has bucket & budget properties
         categories = categories.map(c => ({
           ...c,
-          type: c.type || 'expense',
           bucket: c.bucket || (c.type === 'income' ? 'income' : 'needs'),
-          budget: Number(c.budget || 0),
-          icon: c.icon || '🏷️',
-          color: (c.color || '#10b981').split(' ')[0]
+          budget: Number(c.budget || 0)
         }));
       }
     }
@@ -523,7 +503,6 @@
     window.addEventListener('DOMContentLoaded', () => {
       ensureBudgetCategoriesSeeded();
       document.getElementById('currencySelect').value = currentCurrency;
-      document.getElementById('modalCurrencyLabel').textContent = currentCurrency;
       document.getElementById('txDate').valueAsDate = new Date();
       populateMonthFilter();
       renderAll();
@@ -563,7 +542,6 @@
       renderAll();
     }
 
-    // --- TAB SWITCHING ---
     function switchView(view) {
       currentView = view;
       const dView = document.getElementById('viewDashboard');
@@ -571,32 +549,30 @@
       const btnD = document.getElementById('tabBtnDashboard');
       const btnB = document.getElementById('tabBtnBudget');
 
-      if (view === 'budget') {
-        dView.classList.add('hidden');
-        bView.classList.remove('hidden');
-        btnB.className = 'flex-1 sm:flex-initial px-3.5 py-2 rounded-lg bg-emerald-500 text-slate-950 font-bold transition cursor-pointer';
-        btnD.className = 'flex-1 sm:flex-initial px-3.5 py-2 rounded-lg text-slate-300 hover:text-white transition cursor-pointer';
-      } else {
-        bView.classList.add('hidden');
+      if (view === 'dashboard') {
         dView.classList.remove('hidden');
-        btnD.className = 'flex-1 sm:flex-initial px-3.5 py-2 rounded-lg bg-emerald-500 text-slate-950 font-bold transition cursor-pointer';
-        btnB.className = 'flex-1 sm:flex-initial px-3.5 py-2 rounded-lg text-slate-300 hover:text-white transition cursor-pointer';
+        bView.classList.add('hidden');
+        btnD.className = 'px-3.5 py-1.5 rounded-lg bg-emerald-500 text-slate-950 transition';
+        btnB.className = 'px-3.5 py-1.5 rounded-lg text-slate-300 hover:text-white transition';
+      } else {
+        bView.classList.remove('hidden');
+        dView.classList.add('hidden');
+        btnB.className = 'px-3.5 py-1.5 rounded-lg bg-emerald-500 text-slate-950 transition';
+        btnD.className = 'px-3.5 py-1.5 rounded-lg text-slate-300 hover:text-white transition';
       }
-
       renderAll();
     }
 
     // --- MONTH FILTER ---
     function populateMonthFilter() {
       const select = document.getElementById('monthFilter');
-      if (!select) return;
       const prev = select.value;
       const now = new Date();
       const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
       const months = new Set([currentMonthKey]);
       transactions.forEach(t => {
-        if (t && t.date) months.add(t.date.slice(0, 7));
+        if (t.date) months.add(t.date.slice(0, 7));
       });
 
       const sorted = Array.from(months).sort().reverse();
@@ -611,18 +587,12 @@
     }
 
     function getFilteredTransactions() {
-      const monthEl = document.getElementById('monthFilter');
-      const typeEl = document.getElementById('typeFilter');
-      const bucketEl = document.getElementById('bucketFilter');
-      const searchEl = document.getElementById('searchInput');
-
-      const month = monthEl ? monthEl.value : 'ALL';
-      const type = typeEl ? typeEl.value : 'ALL';
-      const bucket = bucketEl ? bucketEl.value : 'ALL';
-      const query = searchEl ? searchEl.value.trim().toLowerCase() : '';
+      const month = document.getElementById('monthFilter').value;
+      const type = document.getElementById('typeFilter').value;
+      const bucket = document.getElementById('bucketFilter').value;
+      const query = document.getElementById('searchInput').value.trim().toLowerCase();
 
       return transactions.filter(t => {
-        if (!t) return false;
         if (month !== 'ALL' && (!t.date || !t.date.startsWith(month))) return false;
         if (type === 'RECEIPT') {
           if (!t.receiptImage) return false;
@@ -631,11 +601,11 @@
         }
         const cat = categories.find(c => c.id === t.categoryId);
         if (bucket !== 'ALL') {
-          const catBucket = cat && cat.bucket ? cat.bucket : 'needs';
+          const catBucket = cat ? cat.bucket : 'needs';
           if (catBucket !== bucket) return false;
         }
         if (query) {
-          const catName = cat && cat.name ? cat.name.toLowerCase() : '';
+          const catName = cat ? cat.name.toLowerCase() : '';
           const note = (t.note || '').toLowerCase();
           if (!catName.includes(query) && !note.includes(query)) return false;
         }
@@ -645,18 +615,17 @@
 
     // --- MAIN RENDER ---
     function renderAll() {
-      const monthEl = document.getElementById('monthFilter');
-      const month = monthEl ? monthEl.value : 'ALL';
-      const periodTx = transactions.filter(t => t && (month === 'ALL' || (t.date && t.date.startsWith(month))));
+      const month = document.getElementById('monthFilter').value;
+      const periodTx = transactions.filter(t => month === 'ALL' || (t.date && t.date.startsWith(month)));
 
       let totalIn = 0, totalOut = 0, savingsActual = 0;
       periodTx.forEach(t => {
         if (t.type === 'income') {
-          totalIn += Number(t.amount || 0);
+          totalIn += Number(t.amount);
         } else {
-          totalOut += Number(t.amount || 0);
+          totalOut += Number(t.amount);
           const cat = categories.find(c => c.id === t.categoryId);
-          if (cat && cat.bucket === 'savings') savingsActual += Number(t.amount || 0);
+          if (cat && cat.bucket === 'savings') savingsActual += Number(t.amount);
         }
       });
 
@@ -686,13 +655,14 @@
       document.getElementById('savingsRateBadge').textContent = `${savingsRate}% in Savings/Debt bucket`;
 
       render503020Tracker(periodTx, totalIn, totalPlanned);
-      renderBudgetPlanner(periodTx);
 
       if (currentView === 'dashboard') {
         const filtered = getFilteredTransactions();
         renderTransactionsList(filtered);
         renderPieChart(periodTx);
         renderBarChart();
+      } else {
+        renderBudgetPlanner(periodTx);
       }
     }
 
@@ -705,18 +675,18 @@
         : `Based on Planned Budget (${formatMoney(totalPlanned)})`;
 
       const buckets = [
-        { key: 'needs', title: '50% Needs', targetPct: 50, barClass: 'bg-sky-400' },
-        { key: 'wants', title: '30% Wants', targetPct: 30, barClass: 'bg-pink-500' },
-        { key: 'savings', title: '20% Savings & Debt', targetPct: 20, barClass: 'bg-emerald-500' }
+        { key: 'needs', title: '50% Needs', targetPct: 50, color: '#38bdf8', barClass: 'bg-sky-400' },
+        { key: 'wants', title: '30% Wants', targetPct: 30, color: '#ec4899', barClass: 'bg-pink-500' },
+        { key: 'savings', title: '20% Savings & Debt', targetPct: 20, color: '#10b981', barClass: 'bg-emerald-500' }
       ];
 
       const container = document.getElementById('ruleCardsContainer');
       container.innerHTML = buckets.map(b => {
-        const bucketCats = categories.filter(c => c.type === 'expense' && (c.bucket || 'needs') === b.key);
+        const bucketCats = categories.filter(c => c.type === 'expense' && c.bucket === b.key);
         const plannedSum = bucketCats.reduce((s, c) => s + Number(c.budget || 0), 0);
         const actualSum = periodTx
           .filter(t => t.type === 'expense' && bucketCats.some(c => c.id === t.categoryId))
-          .reduce((s, t) => s + Number(t.amount || 0), 0);
+          .reduce((s, t) => s + Number(t.amount), 0);
 
         const idealTarget = totalIn > 0 ? (totalIn * (b.targetPct / 100)) : plannedSum;
         const actualSharePct = baseAmount > 0 ? ((actualSum / baseAmount) * 100).toFixed(1) : '0.0';
@@ -756,25 +726,23 @@
     // --- ADJUSTABLE BUDGET PLANNER VIEW ---
     function renderBudgetPlanner(periodTx) {
       const wrapper = document.getElementById('budgetPlannerSections');
-      if (!wrapper) return;
-
       const groups = [
-        { key: 'needs', label: '🏠 50% Needs (Essential Monthly Costs)' },
-        { key: 'wants', label: '🍽️ 30% Wants (Lifestyle & Discretionary)' },
-        { key: 'savings', label: '🏦 20% Savings, Investments & Debt Repayment' }
+        { key: 'needs', label: '🏠 50% Needs (Essential Monthly Costs)', badge: 'Target: 50%' },
+        { key: 'wants', label: '🍽️ 30% Wants (Lifestyle & Discretionary)', badge: 'Target: 30%' },
+        { key: 'savings', label: '🏦 20% Savings, Investments & Debt Repayment', badge: 'Target: 20%' }
       ];
 
       wrapper.innerHTML = groups.map(g => {
-        const groupCats = categories.filter(c => c.type === 'expense' && (c.bucket || 'needs') === g.key);
+        const groupCats = categories.filter(c => c.type === 'expense' && c.bucket === g.key);
         const groupPlanned = groupCats.reduce((s, c) => s + Number(c.budget || 0), 0);
         const groupActual = periodTx
           .filter(t => t.type === 'expense' && groupCats.some(c => c.id === t.categoryId))
-          .reduce((s, t) => s + Number(t.amount || 0), 0);
+          .reduce((s, t) => s + Number(t.amount), 0);
 
         const rowsHtml = groupCats.map(c => {
           const spent = periodTx
             .filter(t => t.type === 'expense' && t.categoryId === c.id)
-            .reduce((s, t) => s + Number(t.amount || 0), 0);
+            .reduce((s, t) => s + Number(t.amount), 0);
           const plan = Number(c.budget || 0);
           const pct = plan > 0 ? Math.min(100, Math.round((spent / plan) * 100)) : (spent > 0 ? 100 : 0);
           const barColor = spent > plan && plan > 0 ? 'bg-rose-500' : (pct >= 85 ? 'bg-amber-400' : 'bg-emerald-500');
@@ -798,6 +766,7 @@
                 </div>
               </div>
 
+              <!-- Inline Editable Controls -->
               <div class="flex items-center justify-end gap-2 shrink-0">
                 <select onchange="updateCategoryBucket('${c.id}', this.value)" class="bg-slate-800 border border-slate-700 rounded-lg px-2 py-1.5 text-[11px] text-slate-300">
                   <option value="needs" ${c.bucket === 'needs' ? 'selected' : ''}>50% Needs</option>
@@ -813,6 +782,7 @@
                     value="${plan}"
                     onchange="updateCategoryBudget('${c.id}', this.value)"
                     class="w-24 bg-transparent text-xs font-bold text-white text-right focus:outline-none"
+                    title="Click to adjust monthly planned budget"
                   />
                 </div>
               </div>
@@ -886,7 +856,7 @@
                 <div class="flex items-center gap-2 flex-wrap">
                   <span class="text-xs font-semibold text-white truncate">${cat.name}</span>
                   ${bucketTag}
-                  ${t.receiptImage ? `<button type="button" onclick="previewFullImage('${t.id}')" class="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 font-medium flex items-center gap-1">📷 Receipt</button>` : ''}
+                  ${t.receiptImage ? `<button onclick="previewFullImage('${t.id}')" class="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 font-medium flex items-center gap-1">📷 Receipt</button>` : ''}
                 </div>
                 <div class="text-[11px] text-slate-400 truncate">${t.note || 'No description'} • ${t.date}</div>
               </div>
@@ -895,8 +865,8 @@
               <span class="text-xs font-bold ${isInc ? 'text-emerald-400' : 'text-rose-400'}">
                 ${isInc ? '+' : '-'}${formatMoney(t.amount)}
               </span>
-              <button type="button" onclick="editTransaction('${t.id}')" class="text-slate-400 hover:text-white text-xs px-1.5 py-1" title="Edit">✏️</button>
-              <button type="button" onclick="deleteTransaction('${t.id}')" class="text-slate-500 hover:text-rose-400 text-xs px-1.5 py-1" title="Delete">🗑️</button>
+              <button onclick="editTransaction('${t.id}')" class="text-slate-400 hover:text-white text-xs px-1.5 py-1" title="Edit">✏️</button>
+              <button onclick="deleteTransaction('${t.id}')" class="text-slate-500 hover:text-rose-400 text-xs px-1.5 py-1" title="Delete">🗑️</button>
             </div>
           </div>`;
       }).join('');
@@ -911,6 +881,7 @@
       reader.onload = (e) => {
         const img = new Image();
         img.onload = () => {
+          // Compress image to max 850px width so dozens of receipts fit inside localStorage
           const canvas = document.createElement('canvas');
           const MAX_WIDTH = 850;
           const scale = img.width > MAX_WIDTH ? MAX_WIDTH / img.width : 1;
@@ -942,12 +913,11 @@
       applyBtn.classList.add('hidden');
 
       try {
-        if (typeof Tesseract === 'undefined') throw new Error('OCR offline');
         const result = await Tesseract.recognize(dataUrl, 'eng');
         const rawText = result.data.text || '';
         parseReceiptText(rawText);
       } catch (err) {
-        statusEl.textContent = '📷 Photo attached! (Manual entry mode)';
+        statusEl.textContent = '📷 Photo attached! (Offline/manual entry mode)';
         statusEl.className = 'text-[11px] font-medium text-emerald-400';
       }
     }
@@ -960,6 +930,7 @@
       const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
       const merchantLine = lines.find(l => l.length > 3 && !/^\d+$/.test(l)) || '';
 
+      // Find largest sensible currency figure or line labeled TOTAL / AMOUNT / UGX
       let detectedAmount = null;
       const totalRegex = /(?:total|amount|ugx|ush|cash|paid|due|net)[^0-9]*([0-9]{1,3}(?:[,\s][0-9]{3})+|[0-9]{3,9}(?:\.[0-9]{2})?)/gi;
       const candidates = [];
@@ -979,8 +950,11 @@
         }
       }
 
-      if (candidates.length > 0) detectedAmount = Math.max(...candidates);
+      if (candidates.length > 0) {
+        detectedAmount = Math.max(...candidates);
+      }
 
+      // Detect date if present
       let detectedDate = null;
       const dateMatch = text.match(/\b(\d{4}[-/]\d{2}[-/]\d{2})\b/) || text.match(/\b(\d{2})[-/](\d{2})[-/](20\d{2})\b/);
       if (dateMatch) {
@@ -991,6 +965,7 @@
         }
       }
 
+      // Guess category by keywords
       const lower = text.toLowerCase();
       let guessedCat = null;
       const keywordMap = [
@@ -1027,6 +1002,7 @@
         if (merchantLine) parts.push(`Text: "${merchantLine.slice(0, 30)}"`);
         summaryEl.textContent = parts.join(' • ');
         applyBtn.classList.remove('hidden');
+        // Auto-fill if amount input is currently blank
         if (!document.getElementById('txAmount').value && detectedAmount) {
           applyOcrValues();
         }
@@ -1037,8 +1013,12 @@
     }
 
     function applyOcrValues() {
-      if (extractedOcrData.amount) document.getElementById('txAmount').value = extractedOcrData.amount;
-      if (extractedOcrData.date) document.getElementById('txDate').value = extractedOcrData.date;
+      if (extractedOcrData.amount) {
+        document.getElementById('txAmount').value = extractedOcrData.amount;
+      }
+      if (extractedOcrData.date) {
+        document.getElementById('txDate').value = extractedOcrData.date;
+      }
       if (extractedOcrData.categoryId) {
         const sel = document.getElementById('txCategory');
         if ([...sel.options].some(o => o.value === extractedOcrData.categoryId)) {
@@ -1073,7 +1053,7 @@
       modal.classList.remove('hidden');
     }
 
-    // --- CHARTS (With Safe Guards) ---
+    // --- CHARTS ---
     function setPieMode(mode) {
       currentPieMode = mode;
       const btnExp = document.getElementById('pieToggleExpense');
@@ -1086,141 +1066,131 @@
         btnExp.className = 'px-2.5 py-1 rounded-md text-slate-400 hover:text-white transition';
       }
       const month = document.getElementById('monthFilter').value;
-      const periodTx = transactions.filter(t => t && (month === 'ALL' || (t.date && t.date.startsWith(month))));
+      const periodTx = transactions.filter(t => month === 'ALL' || (t.date && t.date.startsWith(month)));
       renderPieChart(periodTx);
     }
 
     function renderPieChart(periodTx) {
-      try {
-        const modeItems = periodTx.filter(t => t.type === currentPieMode);
-        const totalsByCat = {};
-        let grandTotal = 0;
+      const modeItems = periodTx.filter(t => t.type === currentPieMode);
+      const totalsByCat = {};
+      let grandTotal = 0;
 
-        modeItems.forEach(t => {
-          totalsByCat[t.categoryId] = (totalsByCat[t.categoryId] || 0) + Number(t.amount || 0);
-          grandTotal += Number(t.amount || 0);
-        });
+      modeItems.forEach(t => {
+        totalsByCat[t.categoryId] = (totalsByCat[t.categoryId] || 0) + Number(t.amount);
+        grandTotal += Number(t.amount);
+      });
 
-        const entries = Object.entries(totalsByCat)
-          .map(([catId, total]) => {
-            const cat = categories.find(c => c.id === catId) || { name: 'Other', color: '#64748b', icon: '🏷️' };
-            return { ...cat, total };
-          })
-          .sort((a, b) => b.total - a.total);
+      const entries = Object.entries(totalsByCat)
+        .map(([catId, total]) => {
+          const cat = categories.find(c => c.id === catId) || { name: 'Other', color: '#64748b', icon: '🏷️' };
+          return { ...cat, total };
+        })
+        .sort((a, b) => b.total - a.total);
 
-        const emptyEl = document.getElementById('pieEmptyState');
-        const legendEl = document.getElementById('categoryLegend');
+      const emptyEl = document.getElementById('pieEmptyState');
+      const legendEl = document.getElementById('categoryLegend');
 
-        if (entries.length === 0) {
-          emptyEl.classList.remove('hidden');
-          legendEl.innerHTML = '';
-          if (pieChartInstance) pieChartInstance.destroy();
-          return;
-        }
-        emptyEl.classList.add('hidden');
-
-        legendEl.innerHTML = entries.map(e => {
-          const pct = grandTotal > 0 ? Math.round((e.total / grandTotal) * 100) : 0;
-          return `
-            <div class="flex items-center justify-between py-1">
-              <div class="flex items-center gap-2 truncate">
-                <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background:${e.color}"></span>
-                <span class="text-slate-300 truncate">${e.icon} ${e.name}</span>
-              </div>
-              <div class="text-slate-400 font-medium shrink-0 ml-2">${formatMoney(e.total)} <span class="text-slate-500">(${pct}%)</span></div>
-            </div>`;
-        }).join('');
-
-        if (typeof Chart === 'undefined') return;
-        const ctx = document.getElementById('categoryPieChart').getContext('2d');
+      if (entries.length === 0) {
+        emptyEl.classList.remove('hidden');
+        legendEl.innerHTML = '';
         if (pieChartInstance) pieChartInstance.destroy();
+        return;
+      }
+      emptyEl.classList.add('hidden');
 
-        pieChartInstance = new Chart(ctx, {
-          type: 'doughnut',
-          data: {
-            labels: entries.map(e => e.name),
-            datasets: [{
-              data: entries.map(e => e.total),
-              backgroundColor: entries.map(e => e.color),
-              borderColor: '#0f172a',
-              borderWidth: 2
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            cutout: '66%',
-            plugins: {
-              legend: { display: false },
-              tooltip: {
-                callbacks: {
-                  label: (ctx) => {
-                    const val = ctx.parsed;
-                    const pct = grandTotal > 0 ? ((val / grandTotal) * 100).toFixed(1) : 0;
-                    return ` ${ctx.label}: ${formatMoney(val)} (${pct}%)`;
-                  }
+      const ctx = document.getElementById('categoryPieChart').getContext('2d');
+      if (pieChartInstance) pieChartInstance.destroy();
+
+      pieChartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: entries.map(e => e.name),
+          datasets: [{
+            data: entries.map(e => e.total),
+            backgroundColor: entries.map(e => e.color),
+            borderColor: '#0f172a',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '66%',
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => {
+                  const val = ctx.parsed;
+                  const pct = grandTotal > 0 ? ((val / grandTotal) * 100).toFixed(1) : 0;
+                  return ` ${ctx.label}: ${formatMoney(val)} (${pct}%)`;
                 }
               }
             }
           }
-        });
-      } catch (e) {
-        console.warn('Pie chart render skipped:', e);
-      }
+        }
+      });
+
+      legendEl.innerHTML = entries.map(e => {
+        const pct = grandTotal > 0 ? Math.round((e.total / grandTotal) * 100) : 0;
+        return `
+          <div class="flex items-center justify-between py-1">
+            <div class="flex items-center gap-2 truncate">
+              <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background:${e.color}"></span>
+              <span class="text-slate-300 truncate">${e.icon} ${e.name}</span>
+            </div>
+            <div class="text-slate-400 font-medium shrink-0 ml-2">${formatMoney(e.total)} <span class="text-slate-500">(${pct}%)</span></div>
+          </div>`;
+      }).join('');
     }
 
     function renderBarChart() {
-      try {
-        if (typeof Chart === 'undefined') return;
-        const months = [];
-        const now = new Date();
-        for (let i = 5; i >= 0; i--) {
-          const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-          const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-          const label = d.toLocaleDateString(undefined, { month: 'short' });
-          months.push({ key, label, income: 0, expense: 0 });
+      const months = [];
+      const now = new Date();
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        const label = d.toLocaleDateString(undefined, { month: 'short' });
+        months.push({ key, label, income: 0, expense: 0 });
+      }
+
+      transactions.forEach(t => {
+        if (!t.date) return;
+        const mKey = t.date.slice(0, 7);
+        const bucket = months.find(m => m.key === mKey);
+        if (bucket) {
+          if (t.type === 'income') bucket.income += Number(t.amount);
+          else bucket.expense += Number(t.amount);
         }
+      });
 
-        transactions.forEach(t => {
-          if (!t || !t.date) return;
-          const mKey = t.date.slice(0, 7);
-          const bucket = months.find(m => m.key === mKey);
-          if (bucket) {
-            if (t.type === 'income') bucket.income += Number(t.amount || 0);
-            else bucket.expense += Number(t.amount || 0);
-          }
-        });
+      const ctx = document.getElementById('trendBarChart').getContext('2d');
+      if (barChartInstance) barChartInstance.destroy();
 
-        const ctx = document.getElementById('trendBarChart').getContext('2d');
-        if (barChartInstance) barChartInstance.destroy();
-
-        barChartInstance = new Chart(ctx, {
-          type: 'bar',
-          data: {
-            labels: months.map(m => m.label),
-            datasets: [
-              { label: 'Revenue', data: months.map(m => m.income), backgroundColor: '#10b981', borderRadius: 6 },
-              { label: 'Outflow', data: months.map(m => m.expense), backgroundColor: '#f43f5e', borderRadius: 6 }
-            ]
+      barChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: months.map(m => m.label),
+          datasets: [
+            { label: 'Revenue', data: months.map(m => m.income), backgroundColor: '#10b981', borderRadius: 6 },
+            { label: 'Outflow', data: months.map(m => m.expense), backgroundColor: '#f43f5e', borderRadius: 6 }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { ticks: { color: '#94a3b8' }, grid: { display: false } },
+            y: { ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } }
           },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-              x: { ticks: { color: '#94a3b8' }, grid: { display: false } },
-              y: { ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } }
-            },
-            plugins: {
-              legend: { labels: { color: '#cbd5e1', boxWidth: 12 } },
-              tooltip: {
-                callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${formatMoney(ctx.parsed.y)}` }
-              }
+          plugins: {
+            legend: { labels: { color: '#cbd5e1', boxWidth: 12 } },
+            tooltip: {
+              callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${formatMoney(ctx.parsed.y)}` }
             }
           }
-        });
-      } catch (e) {
-        console.warn('Bar chart render skipped:', e);
-      }
+        }
+      });
     }
 
     // --- TRANSACTION MODAL ACTIONS ---
@@ -1240,7 +1210,7 @@
       document.getElementById('editingTxId').value = tx.id;
       document.getElementById('txModalTitle').textContent = 'Edit Transaction';
       document.getElementById('txModal').classList.remove('hidden');
-      selectTxType(tx.type || 'expense');
+      selectTxType(tx.type);
       document.getElementById('txAmount').value = tx.amount;
       document.getElementById('txCategory').value = tx.categoryId;
       document.getElementById('txDate').value = tx.date;
@@ -1275,11 +1245,10 @@
       }
 
       const catSelect = document.getElementById('txCategory');
-      const filteredCats = categories.filter(c => (c.type || 'expense') === type);
+      const filteredCats = categories.filter(c => c.type === type);
       catSelect.innerHTML = filteredCats.map(c => {
-        const bName = (c.bucket || 'needs').toUpperCase();
-        const tag = c.type === 'expense' ? ` [${bName}]` : '';
-        return `<option value="${c.id}">${c.icon || '🏷️'} ${c.name}${tag}</option>`;
+        const tag = c.type === 'expense' ? ` [${c.bucket.toUpperCase()}]` : '';
+        return `<option value="${c.id}">${c.icon} ${c.name}${tag}</option>`;
       }).join('');
     }
 
@@ -1351,11 +1320,11 @@
       list.innerHTML = categories.map(c => `
         <div class="py-2.5 flex items-center justify-between gap-2">
           <div class="flex items-center gap-2.5 min-w-0">
-            <span class="w-8 h-8 rounded-lg flex items-center justify-center text-sm shrink-0" style="background:${c.color}22; border:1px solid ${c.color}55">${c.icon || '🏷️'}</span>
+            <span class="w-8 h-8 rounded-lg flex items-center justify-center text-sm shrink-0" style="background:${c.color}22; border:1px solid ${c.color}55">${c.icon}</span>
             <div class="min-w-0">
               <div class="font-semibold text-white truncate">${c.name}</div>
               <div class="text-[10px] text-slate-400">
-                ${c.type === 'income' ? '<span class="text-emerald-400">REVENUE</span>' : `<span class="uppercase text-sky-400">${c.bucket \vert{}\vert{} 'needs'}</span> • Planned: ${formatMoney(c.budget || 0)}`}
+                ${c.type === 'income' ? '<span class="text-emerald-400">REVENUE</span>' : `<span class="uppercase text-sky-400">${c.bucket}</span> • Planned: ${formatMoney(c.budget || 0)}`}
               </div>
             </div>
           </div>
@@ -1363,7 +1332,7 @@
             ${c.type === 'expense' ? `
               <input type="number" value="${c.budget \vert{}\vert{} 0}" onchange="updateCategoryBudget('${c.id}', this.value)" class="w-24 bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-right text-xs text-white" />
             ` : ''}
-            <button type="button" onclick="deleteCategory('${c.id}')" class="text-slate-500 hover:text-rose-400 px-1.5">✕</button>
+            <button onclick="deleteCategory('${c.id}')" class="text-slate-500 hover:text-rose-400 px-1.5">✕</button>
           </div>
         </div>
       `).join('');
@@ -1405,7 +1374,7 @@
         return [
           t.date,
           t.type,
-          cat ? (cat.bucket || '') : '',
+          cat ? cat.bucket : '',
           `"${cat ? cat.name : 'Uncategorized'}"`,
           t.amount,
           currentCurrency,
