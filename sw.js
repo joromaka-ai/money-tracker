@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kashflow-cache-v1';
+const CACHE_NAME = 'kashflow-cache-v3';
 const ASSETS = [
   './',
   './index.html',
@@ -13,11 +13,24 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(keys.map((key) => {
+        if (key !== CACHE_NAME) return caches.delete(key);
+      }))
+    ).then(() => self.clients.claim())
+  );
 });
 
+// Network-First Strategy: always fetch latest code when online
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    fetch(event.request).catch(() => caches.match(event.request))
+    fetch(event.request)
+      .then((response) => {
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        return response;
+      })
+      .catch(() => caches.match(event.request))
   );
 });
