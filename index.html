@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>KashFlow Pro</title>
+
+  <!-- PWA & Mobile Standalone Meta Tags -->
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="KashFlow Pro" />
+
+  <!-- Embedded SVG App Icon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='115' fill='%230f172a'/%3E%3Crect x='96' y='136' width='320' height='240' rx='36' fill='%2310b981'/%3E%3Cpath d='M320 220h96v72h-96a36 36 0 0 1 0-72z' fill='%23059669'/%3E%3Ccircle cx='356' cy='256' r='16' fill='%23ffffff'/%3E%3C/svg%3E" />
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='115' fill='%230f172a'/%3E%3Crect x='96' y='136' width='320' height='240' rx='36' fill='%2310b981'/%3E%3Cpath d='M320 220h96v72h-96a36 36 0 0 1 0-72z' fill='%23059669'/%3E%3Ccircle cx='356' cy='256' r='16' fill='%23ffffff'/%3E%3C/svg%3E" />
+
+  <!-- Embedded Web App Manifest for Standalone Installation -->
+  <link rel="manifest" href='data:application/manifest+json,{"name":"KashFlow Pro","short_name":"KashFlow","start_url":".","display":"standalone","background_color":"#0f172a","theme_color":"#10b981","icons":[{"src":"data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 512 512%27%3E%3Crect width=%27512%27 height=%27512%27 rx=%27115%27 fill=%27%230f172a%27/%3E%3Crect x=%2796%27 y=%27136%27 width=%27320%27 height=%27240%27 rx=%2736%27 fill=%27%2310b981%27/%3E%3Cpath d=%27M320 220h96v72h-96a36 36 0 0 1 0-72z%27 fill=%27%23059669%27/%3E%3Ccircle cx=%27356%27 cy=%27256%27 r=%2716%27 fill=%27%23ffffff%27/%3E%3C/svg%3E","sizes":"512x512","type":"image/svg+xml","purpose":"any maskable"}]}' />
+
+  <!-- Tailwind CSS & Chart.js CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body {
+      -webkit-tap-highlight-color: transparent;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    /* Hide scrollbar for clean mobile tabs */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen pb-24 selection:bg-emerald-500 selection:text-white">
+
+  <!-- Top App Bar -->
+  <header class="sticky top-0 z-30 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-4 py-3">
+    <div class="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-bold text-lg shadow-inner">
+          💳
+        </div>
+        <div>
+          <h1 class="font-bold text-base leading-tight tracking-tight text-white">KashFlow Pro</h1>
+          <p class="text-[11px] text-slate-400">Personal Finance & Cash Flow</p>
+        </div>
+      </div>
+
+      <!-- Controls: Currency & Data Backup -->
+      <div class="flex items-center gap-2">
+        <select id="currencySelect" onchange="changeCurrency(this.value)" class="bg-slate-800 border border-slate-700 text-xs font-medium rounded-lg px-2.5 py-1.5 text-slate-200 focus:outline-none focus:border-emerald-500">
+          <option value="UGX">UGX (USh)</option>
+          <option value="USD">USD ($)</option>
+          <option value="KES">KES (KSh)</option>
+          <option value="EUR">EUR (€)</option>
+        </select>
+
+        <button onclick="openCategoryModal()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium px-2.5 py-1.5 rounded-lg transition">
+          + Categories
+        </button>
+
+        <div class="relative group">
+          <button class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium px-2.5 py-1.5 rounded-lg transition">
+            Data ▾
+          </button>
+          <div class="hidden group-hover:block hover:block absolute right-0 mt-1 w-40 bg-slate-800 border border-slate-700 rounded-xl shadow-xl py-1 z-50 text-xs">
+            <button onclick="exportCSV()" class="w-full text-left px-3 py-2 hover:bg-slate-700/70 flex items-center gap-2">📊 Export CSV</button>
+            <button onclick="backupJSON()" class="w-full text-left px-3 py-2 hover:bg-slate-700/70 flex items-center gap-2">💾 Backup JSON</button>
+            <label class="w-full text-left px-3 py-2 hover:bg-slate-700/70 flex items-center gap-2 cursor-pointer">
+              📂 Restore JSON
+              <input type="file" accept=".json" class="hidden" onchange="restoreJSON(event)" />
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="max-w-5xl mx-auto px-4 pt-5 space-y-6">
+
+    <!-- KPI Summary Cards -->
+    <section class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-sm">
+        <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
+          <span>Net Balance</span>
+          <span id="savingsRateBadge" class="px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-medium text-[11px]">0% saved</span>
+        </div>
+        <div id="netBalanceDisplay" class="text-2xl font-bold text-white tracking-tight">USh 0</div>
+      </div>
+
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-sm">
+        <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
+          <span>Total Revenue (Inflow)</span>
+          <span class="text-emerald-400 font-bold">▲</span>
+        </div>
+        <div id="totalIncomeDisplay" class="text-2xl font-bold text-emerald-400 tracking-tight">USh 0</div>
+      </div>
+
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-sm">
+        <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
+          <span>Total Expenses (Outflow)</span>
+          <span class="text-rose-400 font-bold">▼</span>
+        </div>
+        <div id="totalExpenseDisplay" class="text-2xl font-bold text-rose-400 tracking-tight">USh 0</div>
+      </div>
+    </section>
+
+    <!-- Quick Add & Filters Row -->
+    <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-900/70 border border-slate-800/80 rounded-2xl p-3">
+      <div class="flex flex-wrap items-center gap-2">
+        <select id="monthFilter" onchange="renderAll()" class="bg-slate-800 border border-slate-700 text-xs rounded-lg px-2.5 py-2 text-slate-200">
+          <option value="ALL">All Time</option>
+        </select>
+
+        <select id="typeFilter" onchange="renderAll()" class="bg-slate-800 border border-slate-700 text-xs rounded-lg px-2.5 py-2 text-slate-200">
+          <option value="ALL">All Types</option>
+          <option value="expense">Expenses Only</option>
+          <option value="income">Revenue Only</option>
+        </select>
+
+        <input id="searchInput" oninput="renderAll()" type="text" placeholder="Search notes or category..." class="bg-slate-800 border border-slate-700 text-xs rounded-lg px-3 py-2 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500" />
+      </div>
+
+      <button onclick="openTransactionModal()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold text-xs px-4 py-2.5 rounded-xl shadow-lg shadow-emerald-500/20 transition flex items-center gap-1.5">
+        <span>＋</span> Log Transaction
+      </button>
+    </div>
+
+    <!-- Visual Analytics Section (Pie Charts & 6-Month Bar Chart) -->
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <!-- Doughnut Breakdown -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm font-semibold text-white">Category Breakdown</h2>
+          <div class="flex bg-slate-800 p-0.5 rounded-lg text-[11px]">
+            <button id="pieToggleExpense" onclick="setPieMode('expense')" class="px-2.5 py-1 rounded-md bg-rose-500 text-white font-medium transition">Expenses</button>
+            <button id="pieToggleIncome" onclick="setPieMode('income')" class="px-2.5 py-1 rounded-md text-slate-400 hover:text-white transition">Revenue</button>
+          </div>
+        </div>
+        <div class="relative h-56 flex items-center justify-center">
+          <canvas id="categoryPieChart"></canvas>
+          <div id="pieEmptyState" class="hidden absolute inset-0 flex items-center justify-center text-xs text-slate-500">
+            No data for selected period
+          </div>
+        </div>
+        <div id="categoryLegend" class="mt-4 space-y-1.5 max-h-36 overflow-y-auto pr-1 text-xs"></div>
+      </div>
+
+      <!-- 6-Month Trend Histogram -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 lg:col-span-2 flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <h2 class="text-sm font-semibold text-white">Cash Flow Trend (Last 6 Months)</h2>
+            <p class="text-[11px] text-slate-400">Monthly Revenue vs. Expenses comparison</p>
+          </div>
+        </div>
+        <div class="relative h-72 w-full">
+          <canvas id="trendBarChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Transactions Ledger -->
+    <section class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+      <div class="px-4 py-3.5 border-b border-slate-800 flex items-center justify-between">
+        <h2 class="text-sm font-semibold text-white">Transaction History</h2>
+        <span id="txCountBadge" class="text-xs text-slate-400">0 entries</span>
+      </div>
+      <div id="transactionsList" class="divide-y divide-slate-800/70"></div>
+    </section>
+
+  </main>
+
+  <!-- Floating Action Button for Mobile -->
+  <button onclick="openTransactionModal()" class="sm:hidden fixed bottom-5 right-5 z-40 w-14 h-14 rounded-full bg-emerald-500 text-slate-950 shadow-xl shadow-emerald-500/30 flex items-center justify-center text-2xl font-bold active:scale-95 transition">
+    ＋
+  </button>
+
+  <!-- MODAL: Add / Edit Transaction -->
+  <div id="txModal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-t-3xl sm:rounded-2xl p-5 space-y-4 animate-fade-in">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="font-bold text-base text-white">Log Transaction</h3>
+        <button onclick="closeTransactionModal()" class="text-slate-400 hover:text-white text-lg">✕</button>
+      </div>
+
+      <!-- Type Switcher -->
+      <div class="grid grid-cols-2 gap-2 bg-slate-800 p-1 rounded-xl">
+        <button type="button" id="btnTypeExpense" onclick="selectTxType('expense')" class="py-2 rounded-lg text-xs font-semibold bg-rose-500 text-white transition">
+          ▼ Expense
+        </button>
+        <button type="button" id="btnTypeIncome" onclick="selectTxType('income')" class="py-2 rounded-lg text-xs font-semibold text-slate-300 hover:text-white transition">
+          ▲ Revenue
+        </button>
+      </div>
+
+      <form id="txForm" onsubmit="saveTransaction(event)" class="space-y-3.5 text-xs">
+        <div>
+          <label class="block text-slate-400 mb-1">Amount</label>
+          <input id="txAmount" type="number" step="any" required placeholder="e.g. 50000" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-base font-semibold text-white focus:outline-none focus:border-emerald-500" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-400 mb-1">Category</label>
+            <select id="txCategory" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-emerald-500"></select>
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1">Date</label>
+            <input id="txDate" type="date" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-emerald-500" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-slate-400 mb-1">Note / Description</label>
+          <input id="txNote" type="text" placeholder="What was this for?" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-emerald-500" />
+        </div>
+
+        <div class="pt-2 flex gap-2">
+          <button type="button" onclick="closeTransactionModal()" class="w-1/3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-2.5 rounded-xl">Cancel</button>
+          <button type="submit" class="w-2/3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-2.5 rounded-xl">Save Entry</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Custom Categories Manager -->
+  <div id="catModal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm
