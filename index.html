@@ -5,19 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>KashFlow Pro</title>
 
-  <!-- PWA & Mobile Standalone Meta Tags -->
   <meta name="theme-color" content="#0f172a" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="KashFlow Pro" />
 
-  <!-- Embedded Standalone App Icon & Manifest (Zero 404 Risk) -->
   <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/272/272525.png" />
   <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/272/272525.png" />
   <link rel="manifest" href='data:application/manifest+json,{"name":"KashFlow Pro","short_name":"KashFlow","start_url":".","display":"standalone","background_color":"#0f172a","theme_color":"#0f172a","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/272/272525.png","sizes":"512x512","type":"image/png"}]}' />
 
-  <!-- Tailwind CSS, Chart.js & Tesseract.js -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
@@ -31,128 +28,78 @@
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen pb-24 selection:bg-emerald-500 selection:text-white">
+<body class="bg-slate-950 text-slate-100 min-h-screen pb-28 selection:bg-emerald-500 selection:text-white">
 
   <!-- Top App Bar -->
   <header class="sticky top-0 z-30 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 px-4 py-3">
-    <div class="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-3">
+    <div class="max-w-4xl mx-auto flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-2.5">
         <div class="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-bold text-lg shadow-inner">
           💳
         </div>
         <div>
           <h1 class="font-bold text-base leading-tight tracking-tight text-white">KashFlow Pro</h1>
-          <p class="text-[11px] text-slate-400">50/30/20 Budget & Receipt OCR</p>
+          <p id="currentPageTitle" class="text-[11px] text-emerald-400 font-medium">Dashboard Overview</p>
         </div>
       </div>
 
-      <!-- Controls -->
       <div class="flex items-center gap-2">
         <button type="button" id="installAppBtn" onclick="triggerInstall()" class="hidden bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs px-2.5 py-1.5 rounded-lg shadow transition cursor-pointer">
           📲 Install App
         </button>
 
-        <select id="currencySelect" onchange="changeCurrency(this.value)" class="bg-slate-800 border border-slate-700 text-xs font-medium rounded-lg px-2 py-1.5 text-slate-200 focus:outline-none focus:border-emerald-500">
-          <option value="UGX">UGX (USh)</option>
-          <option value="USD">USD ($)</option>
-          <option value="KES">KES (KSh)</option>
-          <option value="EUR">EUR (€)</option>
-        </select>
+        <select id="monthFilter" onchange="renderAll()" class="bg-slate-800 border border-slate-700 text-xs rounded-xl px-2.5 py-1.5 text-slate-200 font-medium"></select>
 
-        <button type="button" onclick="openCategoryModal()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium px-2.5 py-1.5 rounded-lg transition cursor-pointer">
-          ⚙️ Categories
+        <button type="button" onclick="openTransactionModal()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs px-3 py-1.5 rounded-xl shadow transition cursor-pointer flex items-center gap-1">
+          <span>＋</span> Log
         </button>
-
-        <div class="relative">
-          <button type="button" onclick="toggleDataMenu(event)" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium px-2.5 py-1.5 rounded-lg transition cursor-pointer">
-            Data ▾
-          </button>
-          <div id="dataDropdownMenu" class="hidden absolute right-0 mt-1 w-48 bg-slate-800 border border-slate-700 rounded-xl shadow-xl py-1 z-50 text-xs">
-            <button type="button" onclick="exportCSV()" class="w-full text-left px-3 py-2.5 hover:bg-slate-700/70 flex items-center gap-2">📊 Export CSV</button>
-            <button type="button" onclick="backupJSON()" class="w-full text-left px-3 py-2.5 hover:bg-slate-700/70 flex items-center gap-2">💾 Backup JSON</button>
-            <label class="w-full text-left px-3 py-2.5 hover:bg-slate-700/70 flex items-center gap-2 cursor-pointer">
-              📂 Restore JSON
-              <input type="file" accept=".json" class="hidden" onchange="restoreJSON(event)" />
-            </label>
-            <button type="button" onclick="syncDefaultBudget()" class="w-full text-left px-3 py-2.5 hover:bg-slate-700/70 text-emerald-400 flex items-center gap-2 border-t border-slate-700/60">
-              🔄 Reset Default Budget
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   </header>
 
-  <!-- Main Content Container -->
-  <main class="max-w-5xl mx-auto px-4 pt-4 space-y-5">
+  <!-- Main Multi-Page Container -->
+  <main class="max-w-4xl mx-auto px-4 pt-4 space-y-5">
 
-    <!-- Navigation Tabs & Period Filter -->
-    <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-900 border border-slate-800 rounded-2xl p-2 relative z-20">
-      <div class="flex bg-slate-800/80 p-1 rounded-xl text-xs font-semibold w-full sm:w-auto">
-        <button type="button" id="tabBtnDashboard" onclick="switchView('dashboard')" class="flex-1 sm:flex-initial px-3.5 py-2 rounded-lg bg-emerald-500 text-slate-950 font-bold transition cursor-pointer">
-          📊 Overview & Ledger
-        </button>
-        <button type="button" id="tabBtnBudget" onclick="switchView('budget')" class="flex-1 sm:flex-initial px-3.5 py-2 rounded-lg text-slate-300 hover:text-white transition cursor-pointer">
-          🎯 50/30/20 & Budget Plan
-        </button>
-      </div>
-
-      <div class="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto">
-        <select id="monthFilter" onchange="renderAll()" class="bg-slate-800 border border-slate-700 text-xs rounded-xl px-3 py-2 text-slate-200 font-medium"></select>
-        <button type="button" onclick="openTransactionModal()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs px-3.5 py-2 rounded-xl shadow-lg shadow-emerald-500/20 transition flex items-center gap-1 cursor-pointer">
-          <span>＋</span> Log / Scan
-        </button>
-      </div>
-    </div>
-
-    <!-- KPI Summary Cards -->
-    <section class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5">
-        <div class="text-[11px] text-slate-400 mb-1">Total Revenue</div>
-        <div id="totalIncomeDisplay" class="text-lg sm:text-xl font-bold text-emerald-400 truncate">USh 0</div>
-        <div class="text-[10px] text-slate-500 mt-0.5">Actual Inflow</div>
-      </div>
-
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5">
-        <div class="text-[11px] text-slate-400 mb-1">Total Outflow</div>
-        <div id="totalExpenseDisplay" class="text-lg sm:text-xl font-bold text-rose-400 truncate">USh 0</div>
-        <div class="text-[10px] text-slate-500 mt-0.5">Expenses + Savings</div>
-      </div>
-
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5">
-        <div class="text-[11px] text-slate-400 mb-1">Planned Monthly Budget</div>
-        <div id="plannedBudgetDisplay" class="text-lg sm:text-xl font-bold text-sky-400 truncate">USh 3,583,750</div>
-        <div id="budgetRemainingSubtext" class="text-[10px] text-slate-400 mt-0.5">100% remaining</div>
-      </div>
-
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5">
-        <div class="text-[11px] text-slate-400 mb-1">Net Cash Flow</div>
-        <div id="netBalanceDisplay" class="text-lg sm:text-xl font-bold text-white truncate">USh 0</div>
-        <div id="savingsRateBadge" class="text-[10px] text-emerald-400 mt-0.5">0% savings/debt rate</div>
-      </div>
-    </section>
-
-    <!-- 50 / 30 / 20 RULE LIVE SUMMARY BAR -->
-    <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
-      <div class="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h2 class="text-sm font-bold text-white flex items-center gap-2">
-            <span>🎯 50 / 30 / 20 Rule Tracker</span>
-            <span id="ruleBasisBadge" class="text-[10px] font-normal px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">Based on Planned Budget</span>
-          </h2>
-          <p class="text-[11px] text-slate-400">Compares your Needs (50%), Wants (30%), and Savings/Debt (20%) against your monthly baseline</p>
+    <!-- ==================== PAGE 1: DASHBOARD ==================== -->
+    <div id="pageDashboard" class="space-y-4">
+      <!-- Clickable KPI Summary Cards -->
+      <section class="grid grid-cols-2 gap-3">
+        <div onclick="navigateToRevenueLedger()" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 cursor-pointer hover:border-emerald-500/50 transition group">
+          <div class="text-xs text-slate-400 mb-1 flex items-center justify-between">
+            <span>Total Revenue</span>
+            <span class="text-emerald-400 group-hover:translate-x-0.5 transition">➔</span>
+          </div>
+          <div id="totalIncomeDisplay" class="text-xl sm:text-2xl font-bold text-emerald-400 truncate">USh 0</div>
+          <div class="text-[10px] text-slate-500 mt-0.5">Tap to view revenue ledger</div>
         </div>
-      </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1" id="ruleCardsContainer"></div>
-    </section>
+        <div onclick="switchPage('budget')" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 cursor-pointer hover:border-sky-500/50 transition group">
+          <div class="text-xs text-slate-400 mb-1 flex items-center justify-between">
+            <span>Planned Budget</span>
+            <span class="text-sky-400 group-hover:translate-x-0.5 transition">➔</span>
+          </div>
+          <div id="plannedBudgetDisplay" class="text-xl sm:text-2xl font-bold text-sky-400 truncate">USh 3,583,750</div>
+          <div id="budgetRemainingSubtext" class="text-[10px] text-slate-400 mt-0.5">100% remaining</div>
+        </div>
 
-    <!-- ==================== VIEW 1: DASHBOARD & LEDGER ==================== -->
-    <div id="viewDashboard" class="space-y-5">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+          <div class="text-xs text-slate-400 mb-1">Total Outflow</div>
+          <div id="totalExpenseDisplay" class="text-xl sm:text-2xl font-bold text-rose-400 truncate">USh 0</div>
+          <div class="text-[10px] text-slate-500 mt-0.5">Expenses + Savings</div>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+          <div class="text-xs text-slate-400 mb-1">Remaining Balance</div>
+          <div id="netBalanceDisplay" class="text-xl sm:text-2xl font-bold text-white truncate">USh 0</div>
+          <div id="savingsRateBadge" class="text-[10px] text-emerald-400 mt-0.5">0% savings rate</div>
+        </div>
+      </section>
+
+      <!-- Visual Analytics Charts -->
       <section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between">
           <div class="flex items-center justify-between mb-3">
-            <h2 class="text-sm font-semibold text-white">Category Breakdown</h2>
+            <h2 class="text-sm font-semibold text-white">Outflow Breakdown</h2>
             <div class="flex bg-slate-800 p-0.5 rounded-lg text-[11px]">
               <button type="button" id="pieToggleExpense" onclick="setPieMode('expense')" class="px-2.5 py-1 rounded-md bg-rose-500 text-white font-medium transition cursor-pointer">Outflow</button>
               <button type="button" id="pieToggleIncome" onclick="setPieMode('income')" class="px-2.5 py-1 rounded-md text-slate-400 hover:text-white transition cursor-pointer">Revenue</button>
@@ -164,7 +111,7 @@
               No entries for this period
             </div>
           </div>
-          <div id="categoryLegend" class="mt-4 space-y-1.5 max-h-40 overflow-y-auto pr-1 text-xs"></div>
+          <div id="categoryLegend" class="mt-4 space-y-1.5 max-h-36 overflow-y-auto pr-1 text-xs"></div>
         </div>
 
         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 lg:col-span-2 flex flex-col justify-between">
@@ -174,13 +121,31 @@
               <p class="text-[11px] text-slate-400">Monthly Revenue vs. Total Outflow</p>
             </div>
           </div>
-          <div class="relative h-72 w-full">
+          <div class="relative h-64 w-full">
             <canvas id="trendBarChart"></canvas>
           </div>
         </div>
       </section>
+    </div>
 
-      <!-- Search & Filter Bar -->
+    <!-- ==================== PAGE 2: BUDGET & CATEGORY SLIDERS ==================== -->
+    <div id="pageBudget" class="hidden space-y-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 class="text-sm font-bold text-white">Category Spending Sliders</h2>
+          <p class="text-xs text-slate-400">Inspect which specific items are going over budget and adjust your monthly targets.</p>
+        </div>
+        <button type="button" onclick="openCategoryModal()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs px-3.5 py-2 rounded-xl transition cursor-pointer">
+          + Add Category
+        </button>
+      </div>
+
+      <!-- Individual Category Progress Sliders -->
+      <div id="categorySlidersContainer" class="space-y-3"></div>
+    </div>
+
+    <!-- ==================== PAGE 3: TRANSACTION LEDGER ==================== -->
+    <div id="pageLedger" class="hidden space-y-4">
       <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-900 border border-slate-800 rounded-2xl p-3">
         <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           <select id="typeFilter" onchange="renderAll()" class="bg-slate-800 border border-slate-700 text-xs rounded-lg px-2.5 py-2 text-slate-200">
@@ -190,47 +155,77 @@
             <option value="RECEIPT">📷 With Receipt Photo</option>
           </select>
 
-          <select id="bucketFilter" onchange="renderAll()" class="bg-slate-800 border border-slate-700 text-xs rounded-lg px-2.5 py-2 text-slate-200">
-            <option value="ALL">All 50/30/20 Buckets</option>
-            <option value="needs">50% Needs</option>
-            <option value="wants">30% Wants</option>
-            <option value="savings">20% Savings & Debt</option>
-          </select>
-
-          <input id="searchInput" oninput="renderAll()" type="text" placeholder="Search merchant, notes, category..." class="flex-1 sm:w-56 bg-slate-800 border border-slate-700 text-xs rounded-lg px-3 py-2 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500" />
+          <input id="searchInput" oninput="renderAll()" type="text" placeholder="Search merchant, notes..." class="flex-1 sm:w-60 bg-slate-800 border border-slate-700 text-xs rounded-lg px-3 py-2 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500" />
         </div>
         <span id="txCountBadge" class="text-xs text-slate-400 px-1">0 entries</span>
       </div>
 
-      <!-- Transactions Ledger -->
       <section class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
         <div id="transactionsList" class="divide-y divide-slate-800/70"></div>
       </section>
     </div>
 
-    <!-- ==================== VIEW 2: 50/30/20 & MONTHLY BUDGET PLANNER ==================== -->
-    <div id="viewBudget" class="hidden space-y-5">
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 class="text-sm font-bold text-white">Adjustable Monthly Budget Plan</h2>
-          <p class="text-xs text-slate-400">Tap any planned amount or 50/30/20 group below to adjust your monthly targets immediately.</p>
+    <!-- ==================== PAGE 4: SETTINGS & DATA ==================== -->
+    <div id="pageSettings" class="hidden space-y-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+        <h2 class="text-sm font-bold text-white border-b border-slate-800 pb-3">App Settings & Data Management</h2>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+          <div class="space-y-1.5">
+            <label class="block text-slate-400 font-medium">Currency Display</label>
+            <select id="currencySelect" onchange="changeCurrency(this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-slate-200 font-medium focus:outline-none focus:border-emerald-500">
+              <option value="UGX">UGX (USh)</option>
+              <option value="USD">USD ($)</option>
+              <option value="KES">KES (KSh)</option>
+              <option value="EUR">EUR (€)</option>
+            </select>
+          </div>
+
+          <div class="space-y-1.5">
+            <label class="block text-slate-400 font-medium">Reset Monthly Plan</label>
+            <button type="button" onclick="syncDefaultBudget()" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-emerald-400 font-semibold py-2.5 rounded-xl transition cursor-pointer">
+              🔄 Reset 23 Default Categories
+            </button>
+          </div>
         </div>
-        <div class="flex items-center gap-2">
-          <button type="button" onclick="openCategoryModal()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs px-3.5 py-2 rounded-xl transition cursor-pointer">
-            + Add Budget Category
-          </button>
+
+        <div class="pt-3 border-t border-slate-800 space-y-2">
+          <label class="block text-slate-400 font-medium text-xs">Data Portability & Backups</label>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+            <button type="button" onclick="exportCSV()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-medium py-2.5 rounded-xl transition cursor-pointer">📊 Export CSV</button>
+            <button type="button" onclick="backupJSON()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-medium py-2.5 rounded-xl transition cursor-pointer">💾 Backup JSON</button>
+            <label class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-medium py-2.5 rounded-xl transition cursor-pointer text-center flex items-center justify-center">
+              📂 Restore JSON
+              <input type="file" accept=".json" class="hidden" onchange="restoreJSON(event)" />
+            </label>
+          </div>
         </div>
       </div>
-
-      <div id="budgetPlannerSections" class="space-y-4"></div>
     </div>
 
   </main>
 
-  <!-- Floating Action Button for Mobile -->
-  <button type="button" onclick="openTransactionModal()" class="sm:hidden fixed bottom-5 right-5 z-40 w-14 h-14 rounded-full bg-emerald-500 text-slate-950 shadow-xl shadow-emerald-500/30 flex items-center justify-center text-2xl font-bold active:scale-95 transition cursor-pointer">
-    ＋
-  </button>
+  <!-- ==================== BOTTOM NAVIGATION BAR ==================== -->
+  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 px-2 py-2">
+    <div class="max-w-md mx-auto grid grid-cols-4 gap-1 text-center">
+      <button type="button" id="navBtnDashboard" onclick="switchPage('dashboard')" class="py-1.5 rounded-xl flex flex-col items-center justify-center text-emerald-400 font-bold transition cursor-pointer">
+        <span class="text-base">📊</span>
+        <span class="text-[10px] mt-0.5">Overview</span>
+      </button>
+      <button type="button" id="navBtnBudget" onclick="switchPage('budget')" class="py-1.5 rounded-xl flex flex-col items-center justify-center text-slate-400 hover:text-white transition cursor-pointer">
+        <span class="text-base">🎯</span>
+        <span class="text-[10px] mt-0.5">Budget</span>
+      </button>
+      <button type="button" id="navBtnLedger" onclick="switchPage('ledger')" class="py-1.5 rounded-xl flex flex-col items-center justify-center text-slate-400 hover:text-white transition cursor-pointer">
+        <span class="text-base">📝</span>
+        <span class="text-[10px] mt-0.5">Ledger</span>
+      </button>
+      <button type="button" id="navBtnSettings" onclick="switchPage('settings')" class="py-1.5 rounded-xl flex flex-col items-center justify-center text-slate-400 hover:text-white transition cursor-pointer">
+        <span class="text-base">⚙️</span>
+        <span class="text-[10px] mt-0.5">Settings</span>
+      </button>
+    </div>
+  </nav>
 
   <!-- ==================== MODAL: ADD / SCAN TRANSACTION ==================== -->
   <div id="txModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto">
@@ -276,7 +271,7 @@
 
       <div class="grid grid-cols-2 gap-2 bg-slate-800 p-1 rounded-xl">
         <button type="button" id="btnTypeExpense" onclick="selectTxType('expense')" class="py-2 rounded-lg text-xs font-semibold bg-rose-500 text-white transition cursor-pointer">
-          ▼ Outflow (Expense/Save)
+          ▼ Outflow (Expense)
         </button>
         <button type="button" id="btnTypeIncome" onclick="selectTxType('income')" class="py-2 rounded-lg text-xs font-semibold text-slate-300 hover:text-white transition cursor-pointer">
           ▲ Revenue (Inflow)
@@ -314,11 +309,11 @@
     </div>
   </div>
 
-  <!-- ==================== MODAL: MANAGE CATEGORIES & BUDGET ==================== -->
+  <!-- ==================== MODAL: MANAGE CATEGORIES ==================== -->
   <div id="catModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
     <div class="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-t-3xl sm:rounded-2xl p-5 space-y-4 max-h-[90vh] flex flex-col">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-        <h3 class="font-bold text-base text-white">Add / Edit Categories & Planned Budget</h3>
+        <h3 class="font-bold text-base text-white">Add / Edit Budget Categories</h3>
         <button type="button" onclick="closeCategoryModal()" class="text-slate-400 hover:text-white text-lg">✕</button>
       </div>
 
@@ -326,26 +321,18 @@
         <div class="font-semibold text-slate-300">Create New Category</div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <input id="newCatName" type="text" required placeholder="Category name..." class="sm:col-span-2 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white" />
-          <select id="newCatType" onchange="toggleNewCatBucket(this.value)" class="bg-slate-800 border border-slate-700 rounded-lg px-2 py-2 text-white">
+          <select id="newCatType" class="bg-slate-800 border border-slate-700 rounded-lg px-2 py-2 text-white">
             <option value="expense">Outflow (Budgeted)</option>
             <option value="income">Revenue (Inflow)</option>
           </select>
         </div>
 
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          <div id="newCatBucketWrap">
-            <label class="block text-[10px] text-slate-400 mb-0.5">50/30/20 Bucket</label>
-            <select id="newCatBucket" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2 py-1.5 text-white">
-              <option value="needs">50% Needs</option>
-              <option value="wants">30% Wants</option>
-              <option value="savings">20% Savings/Debt</option>
-            </select>
-          </div>
           <div>
             <label class="block text-[10px] text-slate-400 mb-0.5">Monthly Budget</label>
             <input id="newCatBudget" type="number" step="any" placeholder="0" value="0" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white" />
           </div>
-          <div class="flex items-end gap-2 col-span-2 sm:col-span-1">
+          <div class="flex items-end gap-2 col-span-2">
             <div>
               <label class="block text-[10px] text-slate-400 mb-0.5">Icon</label>
               <input id="newCatIcon" type="text" value="🏷️" maxlength="2" class="w-11 text-center bg-slate-800 border border-slate-700 rounded-lg py-1.5 text-sm" />
@@ -365,7 +352,7 @@
     </div>
   </div>
 
-  <!-- ==================== MODAL: FULL RECEIPT PHOTO VIEWER ==================== -->
+  <!-- ==================== MODAL: FULL RECEIPT VIEWER ==================== -->
   <div id="receiptViewerModal" onclick="this.classList.add('hidden')" class="hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex flex-col items-center justify-center p-4">
     <div class="max-w-lg w-full flex flex-col items-center space-y-3" onclick="event.stopPropagation()">
       <div class="w-full flex items-center justify-between text-xs text-slate-300">
@@ -377,7 +364,6 @@
   </div>
 
   <script>
-    // --- PWA INSTALL PROMPT & STANDALONE CHECK ---
     let deferredPrompt = null;
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
@@ -392,48 +378,39 @@
       deferredPrompt = null;
     }
 
-    function toggleDataMenu(e) {
-      e.stopPropagation();
-      document.getElementById('dataDropdownMenu').classList.toggle('hidden');
-    }
-    window.addEventListener('click', () => {
-      const menu = document.getElementById('dataDropdownMenu');
-      if (menu) menu.classList.add('hidden');
-    });
-
     const STORAGE_KEY_TX = 'kashflow_transactions_v1';
     const STORAGE_KEY_CAT = 'kashflow_categories_v1';
     const STORAGE_KEY_CUR = 'kashflow_currency_v1';
-    const STORAGE_KEY_SEEDED = 'kashflow_budget_seeded_v4';
+    const STORAGE_KEY_SEEDED = 'kashflow_budget_seeded_v5';
 
     const USER_BUDGET_CATEGORIES = [
-      { id: 'b_rent', name: 'Rent', type: 'expense', bucket: 'needs', budget: 500000, icon: '🏠', color: '#6366f1' },
-      { id: 'b_transport', name: 'Transport', type: 'expense', bucket: 'needs', budget: 280000, icon: '⛽', color: '#fb923c' },
-      { id: 'b_phone', name: 'Phone', type: 'expense', bucket: 'needs', budget: 20000, icon: '📱', color: '#38bdf8' },
-      { id: 'b_internet', name: 'Internet', type: 'expense', bucket: 'needs', budget: 123500, icon: '🌐', color: '#0ea5e9' },
-      { id: 'b_groceries', name: 'Groceries', type: 'expense', bucket: 'needs', budget: 300000, icon: '🛒', color: '#f43f5e' },
-      { id: 'b_electricity', name: 'Electricity', type: 'expense', bucket: 'needs', budget: 100000, icon: '⚡', color: '#eab308' },
-      { id: 'b_water', name: 'Water', type: 'expense', bucket: 'needs', budget: 30000, icon: '💧', color: '#06b6d4' },
-      { id: 'b_gas', name: 'Gas', type: 'expense', bucket: 'needs', budget: 0, icon: '🔥', color: '#f97316' },
-      { id: 'b_healthcare', name: 'Healthcare', type: 'expense', bucket: 'needs', budget: 30000, icon: '🩺', color: '#ef4444' },
-      { id: 'b_insurance', name: 'Insurance', type: 'expense', bucket: 'needs', budget: 0, icon: '🛡️', color: '#64748b' },
-      { id: 'b_office', name: 'Office Supplies', type: 'expense', bucket: 'needs', budget: 0, icon: '📎', color: '#94a3b8' },
-      { id: 'b_life_ins', name: 'Life Insurance', type: 'expense', bucket: 'needs', budget: 300000, icon: '❤️', color: '#14b8a6' },
-      { id: 'b_clothing', name: 'Clothing', type: 'expense', bucket: 'wants', budget: 100000, icon: '👕', color: '#a855f7' },
-      { id: 'b_dining', name: 'Dining Out', type: 'expense', bucket: 'wants', budget: 500000, icon: '🍽️', color: '#ec4899' },
-      { id: 'b_entertainment', name: 'Entertainment', type: 'expense', bucket: 'wants', budget: 100000, icon: '🎬', color: '#8b5cf6' },
-      { id: 'b_gym', name: 'Gym/Fitness', type: 'expense', bucket: 'wants', budget: 60000, icon: '🏋️', color: '#10b981' },
-      { id: 'b_subscriptions', name: 'Subscriptions', type: 'expense', bucket: 'wants', budget: 45000, icon: '📺', color: '#6366f1' },
-      { id: 'b_drinks', name: 'Drinks', type: 'expense', bucket: 'wants', budget: 350000, icon: '🍻', color: '#f59e0b' },
-      { id: 'b_travel', name: 'Travel/Vacation', type: 'expense', bucket: 'wants', budget: 0, icon: '✈️', color: '#0ea5e9' },
-      { id: 'b_gifts', name: 'Gifts', type: 'expense', bucket: 'wants', budget: 250000, icon: '🎁', color: '#f43f5e' },
-      { id: 'b_selfcare', name: 'Self Care', type: 'expense', bucket: 'wants', budget: 50000, icon: '✨', color: '#d946ef' },
-      { id: 'b_emergency', name: 'Emergency Fund', type: 'expense', bucket: 'savings', budget: 200000, icon: '🏦', color: '#10b981' },
-      { id: 'b_investments', name: 'Investments', type: 'expense', bucket: 'savings', budget: 0, icon: '📈', color: '#3b82f6' },
-      { id: 'b_debt', name: 'Debt', type: 'expense', bucket: 'savings', budget: 245250, icon: '💳', color: '#f43f5e' },
-      { id: 'inc_salary', name: 'Salary & Retainer', type: 'income', bucket: 'income', budget: 0, icon: '💼', color: '#10b981' },
-      { id: 'inc_client', name: 'Client / Project', type: 'income', bucket: 'income', budget: 0, icon: '🎬', color: '#14b8a6' },
-      { id: 'inc_dividends', name: 'Investment Returns', type: 'income', bucket: 'income', budget: 0, icon: '💰', color: '#3b82f6' }
+      { id: 'b_rent', name: 'Rent', type: 'expense', budget: 500000, icon: '🏠', color: '#6366f1' },
+      { id: 'b_transport', name: 'Transport', type: 'expense', budget: 280000, icon: '⛽', color: '#fb923c' },
+      { id: 'b_phone', name: 'Phone', type: 'expense', budget: 20000, icon: '📱', color: '#38bdf8' },
+      { id: 'b_internet', name: 'Internet', type: 'expense', budget: 123500, icon: '🌐', color: '#0ea5e9' },
+      { id: 'b_groceries', name: 'Groceries', type: 'expense', budget: 300000, icon: '🛒', color: '#f43f5e' },
+      { id: 'b_electricity', name: 'Electricity', type: 'expense', budget: 100000, icon: '⚡', color: '#eab308' },
+      { id: 'b_water', name: 'Water', type: 'expense', budget: 30000, icon: '💧', color: '#06b6d4' },
+      { id: 'b_gas', name: 'Gas', type: 'expense', budget: 0, icon: '🔥', color: '#f97316' },
+      { id: 'b_healthcare', name: 'Healthcare', type: 'expense', budget: 30000, icon: '🩺', color: '#ef4444' },
+      { id: 'b_insurance', name: 'Insurance', type: 'expense', budget: 0, icon: '🛡️', color: '#64748b' },
+      { id: 'b_office', name: 'Office Supplies', type: 'expense', budget: 0, icon: '📎', color: '#94a3b8' },
+      { id: 'b_life_ins', name: 'Life Insurance', type: 'expense', budget: 300000, icon: '❤️', color: '#14b8a6' },
+      { id: 'b_clothing', name: 'Clothing', type: 'expense', budget: 100000, icon: '👕', color: '#a855f7' },
+      { id: 'b_dining', name: 'Dining Out', type: 'expense', budget: 500000, icon: '🍽️', color: '#ec4899' },
+      { id: 'b_entertainment', name: 'Entertainment', type: 'expense', budget: 100000, icon: '🎬', color: '#8b5cf6' },
+      { id: 'b_gym', name: 'Gym/Fitness', type: 'expense', budget: 60000, icon: '🏋️', color: '#10b981' },
+      { id: 'b_subscriptions', name: 'Subscriptions', type: 'expense', budget: 45000, icon: '📺', color: '#6366f1' },
+      { id: 'b_drinks', name: 'Drinks', type: 'expense', budget: 350000, icon: '🍻', color: '#f59e0b' },
+      { id: 'b_travel', name: 'Travel/Vacation', type: 'expense', budget: 0, icon: '✈️', color: '#0ea5e9' },
+      { id: 'b_gifts', name: 'Gifts', type: 'expense', budget: 250000, icon: '🎁', color: '#f43f5e' },
+      { id: 'b_selfcare', name: 'Self Care', type: 'expense', budget: 50000, icon: '✨', color: '#d946ef' },
+      { id: 'b_emergency', name: 'Emergency Fund', type: 'expense', budget: 200000, icon: '🏦', color: '#10b981' },
+      { id: 'b_investments', name: 'Investments', type: 'expense', budget: 0, icon: '📈', color: '#3b82f6' },
+      { id: 'b_debt', name: 'Debt', type: 'expense', budget: 245250, icon: '💳', color: '#f43f5e' },
+      { id: 'inc_salary', name: 'Salary & Retainer', type: 'income', budget: 0, icon: '💼', color: '#10b981' },
+      { id: 'inc_client', name: 'Client / Project', type: 'income', budget: 0, icon: '🎬', color: '#14b8a6' },
+      { id: 'inc_dividends', name: 'Investment Returns', type: 'income', budget: 0, icon: '💰', color: '#3b82f6' }
     ];
 
     const CURRENCY_SYMBOLS = { UGX: 'USh ', USD: '$', KES: 'KSh ', EUR: '€' };
@@ -464,7 +441,6 @@
                 id: oldCat.id || ('cat_' + Date.now() + Math.random()),
                 name: oldCat.name,
                 type: oldCat.type || 'expense',
-                bucket: oldCat.bucket || (oldCat.type === 'income' ? 'income' : 'needs'),
                 budget: Number(oldCat.budget || 0),
                 icon: oldCat.icon || '🏷️',
                 color: (oldCat.color || '#10b981').split(' ')[0]
@@ -483,7 +459,6 @@
         categories = categories.map(c => ({
           ...c,
           type: c.type || 'expense',
-          bucket: c.bucket || (c.type === 'income' ? 'income' : 'needs'),
           budget: Number(c.budget || 0),
           icon: c.icon || '🏷️',
           color: (c.color || '#10b981').split(' ')[0]
@@ -491,7 +466,7 @@
       }
     }
 
-    let currentView = 'dashboard';
+    let currentPage = 'dashboard';
     let currentTxType = 'expense';
     let currentPieMode = 'expense';
     let currentReceiptDataUrl = null;
@@ -520,7 +495,7 @@
     }
 
     function syncDefaultBudget() {
-      if (!confirm('Reset all categories to your default UGX 3,583,750 monthly budget plan? (Your transactions will not be deleted)')) return;
+      if (!confirm('Reset all categories to your default UGX 3,583,750 monthly budget plan?')) return;
       localStorage.removeItem(STORAGE_KEY_SEEDED);
       categories = [];
       ensureBudgetCategoriesSeeded();
@@ -543,26 +518,32 @@
       renderAll();
     }
 
-    function switchView(view) {
-      currentView = view;
-      const dView = document.getElementById('viewDashboard');
-      const bView = document.getElementById('viewBudget');
-      const btnD = document.getElementById('tabBtnDashboard');
-      const btnB = document.getElementById('tabBtnBudget');
+    // --- MULTI-PAGE ROUTER ---
+    function switchPage(page) {
+      currentPage = page;
+      const pages = ['dashboard', 'budget', 'ledger', 'settings'];
+      const titles = { dashboard: 'Dashboard Overview', budget: 'Budget & Category Sliders', ledger: 'Transaction Ledger', settings: 'Settings & Data' };
 
-      if (view === 'budget') {
-        dView.classList.add('hidden');
-        bView.classList.remove('hidden');
-        btnB.className = 'flex-1 sm:flex-initial px-3.5 py-2 rounded-lg bg-emerald-500 text-slate-950 font-bold transition cursor-pointer';
-        btnD.className = 'flex-1 sm:flex-initial px-3.5 py-2 rounded-lg text-slate-300 hover:text-white transition cursor-pointer';
-      } else {
-        bView.classList.add('hidden');
-        dView.classList.remove('hidden');
-        btnD.className = 'flex-1 sm:flex-initial px-3.5 py-2 rounded-lg bg-emerald-500 text-slate-950 font-bold transition cursor-pointer';
-        btnB.className = 'flex-1 sm:flex-initial px-3.5 py-2 rounded-lg text-slate-300 hover:text-white transition cursor-pointer';
-      }
+      pages.forEach(p => {
+        const el = document.getElementById(`page${p.charAt(0).toUpperCase() + p.slice(1)}`);
+        const nav = document.getElementById(`navBtn${p.charAt(0).toUpperCase() + p.slice(1)}`);
+        if (el) el.classList.toggle('hidden', p !== page);
+        if (nav) {
+          nav.className = p === page
+            ? 'py-1.5 rounded-xl flex flex-col items-center justify-center text-emerald-400 font-bold transition cursor-pointer'
+            : 'py-1.5 rounded-xl flex flex-col items-center justify-center text-slate-400 hover:text-white transition cursor-pointer';
+        }
+      });
 
+      document.getElementById('currentPageTitle').textContent = titles[page] || '';
+      window.scrollTo(0, 0);
       renderAll();
+    }
+
+    function navigateToRevenueLedger() {
+      const typeFilter = document.getElementById('typeFilter');
+      if (typeFilter) typeFilter.value = 'income';
+      switchPage('ledger');
     }
 
     function populateMonthFilter() {
@@ -589,15 +570,13 @@
     }
 
     function getFilteredTransactions() {
-      const monthEl = document.getElementById('monthFilter');
       const typeEl = document.getElementById('typeFilter');
-      const bucketEl = document.getElementById('bucketFilter');
       const searchEl = document.getElementById('searchInput');
 
-      const month = monthEl ? monthEl.value : 'ALL';
       const type = typeEl ? typeEl.value : 'ALL';
-      const bucket = bucketEl ? bucketEl.value : 'ALL';
       const query = searchEl ? searchEl.value.trim().toLowerCase() : '';
+      const monthEl = document.getElementById('monthFilter');
+      const month = monthEl ? monthEl.value : 'ALL';
 
       return transactions.filter(t => {
         if (!t) return false;
@@ -607,12 +586,8 @@
         } else if (type !== 'ALL' && t.type !== type) {
           return false;
         }
-        const cat = categories.find(c => c.id === t.categoryId);
-        if (bucket !== 'ALL') {
-          const catBucket = cat && cat.bucket ? cat.bucket : 'needs';
-          if (catBucket !== bucket) return false;
-        }
         if (query) {
+          const cat = categories.find(c => c.id === t.categoryId);
           const catName = cat && cat.name ? cat.name.toLowerCase() : '';
           const note = (t.note || '').toLowerCase();
           if (!catName.includes(query) && !note.includes(query)) return false;
@@ -633,7 +608,9 @@
         } else {
           totalOut += Number(t.amount || 0);
           const cat = categories.find(c => c.id === t.categoryId);
-          if (cat && cat.bucket === 'savings') savingsActual += Number(t.amount || 0);
+          if (cat && (cat.name.toLowerCase().includes('emergency') || cat.name.toLowerCase().includes('invest') || cat.name.toLowerCase().includes('debt'))) {
+            savingsActual += Number(t.amount || 0);
+          }
         }
       });
 
@@ -641,7 +618,7 @@
         .filter(c => c.type === 'expense')
         .reduce((sum, c) => sum + Number(c.budget || 0), 0);
 
-      const net = totalIn - totalOut;
+      const remainingBalance = totalIn - totalOut;
       const budgetRemaining = totalPlanned - totalOut;
       const denominator = totalIn > 0 ? totalIn : totalPlanned;
       const savingsRate = denominator > 0 ? Math.round((savingsActual / denominator) * 100) : 0;
@@ -649,162 +626,75 @@
       document.getElementById('totalIncomeDisplay').textContent = formatMoney(totalIn);
       document.getElementById('totalExpenseDisplay').textContent = formatMoney(totalOut);
       document.getElementById('plannedBudgetDisplay').textContent = formatMoney(totalPlanned);
-      document.getElementById('netBalanceDisplay').textContent = formatMoney(net);
+      document.getElementById('netBalanceDisplay').textContent = formatMoney(remainingBalance);
 
       const remEl = document.getElementById('budgetRemainingSubtext');
       if (budgetRemaining >= 0) {
-        remEl.textContent = `${formatMoney(budgetRemaining)} under budget`;
+        remEl.textContent = `${formatMoney(budgetRemaining)} under planned budget`;
         remEl.className = 'text-[10px] text-emerald-400 mt-0.5';
       } else {
-        remEl.textContent = `${formatMoney(Math.abs(budgetRemaining))} over budget`;
+        remEl.textContent = `${formatMoney(Math.abs(budgetRemaining))} over planned budget`;
         remEl.className = 'text-[10px] text-rose-400 font-semibold mt-0.5';
       }
 
-      document.getElementById('savingsRateBadge').textContent = `${savingsRate}% in Savings/Debt bucket`;
+      document.getElementById('savingsRateBadge').textContent = `${savingsRate}% allocated to savings/debt`;
 
-      render503020Tracker(periodTx, totalIn, totalPlanned);
-      renderBudgetPlanner(periodTx);
+      renderCategorySliders(periodTx);
 
-      if (currentView === 'dashboard') {
-        const filtered = getFilteredTransactions();
-        renderTransactionsList(filtered);
+      if (currentPage === 'dashboard') {
         renderPieChart(periodTx);
         renderBarChart();
+      } else if (currentPage === 'ledger') {
+        renderTransactionsList(getFilteredTransactions());
       }
     }
 
-    function render503020Tracker(periodTx, totalIn, totalPlanned) {
-      const baseAmount = totalIn > 0 ? totalIn : (totalPlanned > 0 ? totalPlanned : 1);
-      const badge = document.getElementById('ruleBasisBadge');
-      badge.textContent = totalIn > 0
-        ? `50/30/20 of Actual Revenue (${formatMoney(totalIn)})`
-        : `Based on Planned Budget (${formatMoney(totalPlanned)})`;
+    // --- CATEGORY SPENDING SLIDERS ---
+    function renderCategorySliders(periodTx) {
+      const container = document.getElementById('categorySlidersContainer');
+      if (!container) return;
 
-      const buckets = [
-        { key: 'needs', title: '50% Needs', targetPct: 50, barClass: 'bg-sky-400' },
-        { key: 'wants', title: '30% Wants', targetPct: 30, barClass: 'bg-pink-500' },
-        { key: 'savings', title: '20% Savings & Debt', targetPct: 20, barClass: 'bg-emerald-500' }
-      ];
+      const expenseCats = categories.filter(c => c.type === 'expense');
 
-      const container = document.getElementById('ruleCardsContainer');
-      container.innerHTML = buckets.map(b => {
-        const bucketCats = categories.filter(c => c.type === 'expense' && (c.bucket || 'needs') === b.key);
-        const plannedSum = bucketCats.reduce((s, c) => s + Number(c.budget || 0), 0);
-        const actualSum = periodTx
-          .filter(t => t.type === 'expense' && bucketCats.some(c => c.id === t.categoryId))
+      container.innerHTML = expenseCats.map(c => {
+        const spent = periodTx
+          .filter(t => t.type === 'expense' && t.categoryId === c.id)
           .reduce((s, t) => s + Number(t.amount || 0), 0);
-
-        const idealTarget = totalIn > 0 ? (totalIn * (b.targetPct / 100)) : plannedSum;
-        const actualSharePct = baseAmount > 0 ? ((actualSum / baseAmount) * 100).toFixed(1) : '0.0';
-        const plannedSharePct = totalPlanned > 0 ? ((plannedSum / totalPlanned) * 100).toFixed(1) : '0.0';
-        const progressPct = plannedSum > 0 ? Math.min(100, Math.round((actualSum / plannedSum) * 100)) : 0;
-        const isOver = plannedSum > 0 && actualSum > plannedSum;
+        const plan = Number(c.budget || 0);
+        const pct = plan > 0 ? Math.min(100, Math.round((spent / plan) * 100)) : (spent > 0 ? 100 : 0);
+        const isOver = spent > plan && plan > 0;
+        const barColor = isOver ? 'bg-rose-500' : (pct >= 85 ? 'bg-amber-400' : 'bg-emerald-500');
 
         return `
-          <div class="bg-slate-950/70 border border-slate-800/90 rounded-xl p-3.5 space-y-2">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-bold text-white">${b.title}</span>
-              <span class="text-[11px] font-semibold px-2 py-0.5 rounded-md ${isOver ? 'bg-rose-500/20 text-rose-400' : 'bg-slate-800 text-slate-300'}">
-                ${actualSharePct}% actual (Plan: ${plannedSharePct}%)
-              </span>
-            </div>
-            <div class="flex items-baseline justify-between text-xs">
-              <div>
-                <span class="text-slate-400 text-[11px]">Spent: </span>
-                <span class="font-bold text-white">${formatMoney(actualSum)}</span>
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <span class="w-8 h-8 rounded-lg flex items-center justify-center text-sm shrink-0" style="background:${c.color}22; border:1px solid ${c.color}55">${c.icon || '🏷️'}</span>
+                <span class="text-xs font-bold text-white truncate">${c.name}</span>
               </div>
-              <div class="text-[11px] text-slate-400">
-                Planned: <span class="text-slate-200 font-medium">${formatMoney(plannedSum)}</span>
+              <div class="text-right shrink-0">
+                <span class="text-xs font-bold ${isOver ? 'text-rose-400' : 'text-white'}">${formatMoney(spent)}</span>
+                <span class="text-[11px] text-slate-400"> / Plan: ${formatMoney(plan)}</span>
               </div>
             </div>
-            <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
-              <div class="h-full ${isOver ? 'bg-rose-500' : b.barClass} transition-all duration-300" style="width: ${progressPct}%"></div>
+
+            <!-- Visual Spending Slider / Progress Bar -->
+            <div class="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden">
+              <div class="h-full ${barColor} transition-all duration-300" style="width: ${pct}%"></div>
             </div>
-            <div class="flex items-center justify-between text-[10px] text-slate-400">
-              <span>${progressPct}% of planned bucket used</span>
-              <span>50/30/20 Target: ${formatMoney(idealTarget)}</span>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
 
-    function renderBudgetPlanner(periodTx) {
-      const wrapper = document.getElementById('budgetPlannerSections');
-      if (!wrapper) return;
-
-      const groups = [
-        { key: 'needs', label: '🏠 50% Needs (Essential Monthly Costs)' },
-        { key: 'wants', label: '🍽️ 30% Wants (Lifestyle & Discretionary)' },
-        { key: 'savings', label: '🏦 20% Savings, Investments & Debt Repayment' }
-      ];
-
-      wrapper.innerHTML = groups.map(g => {
-        const groupCats = categories.filter(c => c.type === 'expense' && (c.bucket || 'needs') === g.key);
-        const groupPlanned = groupCats.reduce((s, c) => s + Number(c.budget || 0), 0);
-        const groupActual = periodTx
-          .filter(t => t.type === 'expense' && groupCats.some(c => c.id === t.categoryId))
-          .reduce((s, t) => s + Number(t.amount || 0), 0);
-
-        const rowsHtml = groupCats.map(c => {
-          const spent = periodTx
-            .filter(t => t.type === 'expense' && t.categoryId === c.id)
-            .reduce((s, t) => s + Number(t.amount || 0), 0);
-          const plan = Number(c.budget || 0);
-          const pct = plan > 0 ? Math.min(100, Math.round((spent / plan) * 100)) : (spent > 0 ? 100 : 0);
-          const barColor = spent > plan && plan > 0 ? 'bg-rose-500' : (pct >= 85 ? 'bg-amber-400' : 'bg-emerald-500');
-
-          return `
-            <div class="p-3 sm:px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-800/30 transition">
-              <div class="flex items-center gap-3 min-w-0 flex-1">
-                <div class="w-9 h-9 rounded-xl flex items-center justify-center text-base shrink-0" style="background:${c.color}22; border:1px solid ${c.color}55">
-                  ${c.icon}
-                </div>
-                <div class="min-w-0 flex-1">
-                  <div class="flex items-center justify-between sm:justify-start gap-2">
-                    <span class="text-xs font-bold text-white truncate">${c.name}</span>
-                    <span class="text-[11px] ${spent > plan && plan > 0 ? 'text-rose-400 font-bold' : 'text-slate-400'}">
-                      Spent: ${formatMoney(spent)}
-                    </span>
-                  </div>
-                  <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden mt-1.5 max-w-xs">
-                    <div class="h-full ${barColor}" style="width:${pct}%"></div>
-                  </div>
-                </div>
+            <div class="flex items-center justify-between text-[11px] text-slate-400">
+              <span class="${isOver ? 'text-rose-400 font-bold' : ''}">${pct}% used ${isOver ? '⚠️ (Over Budget!)' : ''}</span>
+              <div class="flex items-center gap-1.5">
+                <span>Edit Target:</span>
+                <input
+                  type="number"
+                  step="any"
+                  value="${plan}"
+                  onchange="updateCategoryBudget('${c.id}', this.value)"
+                  class="w-24 bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-right text-xs font-bold text-white focus:outline-none focus:border-emerald-500"
+                />
               </div>
-
-              <div class="flex items-center justify-end gap-2 shrink-0">
-                <select onchange="updateCategoryBucket('${c.id}', this.value)" class="bg-slate-800 border border-slate-700 rounded-lg px-2 py-1.5 text-[11px] text-slate-300">
-                  <option value="needs" ${c.bucket === 'needs' ? 'selected' : ''}>50% Needs</option>
-                  <option value="wants" ${c.bucket === 'wants' ? 'selected' : ''}>30% Wants</option>
-                  <option value="savings" ${c.bucket === 'savings' ? 'selected' : ''}>20% Savings</option>
-                </select>
-
-                <div class="flex items-center bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 focus-within:border-emerald-500">
-                  <span class="text-[10px] text-slate-400 mr-1">${currentCurrency}</span>
-                  <input
-                    type="number"
-                    step="any"
-                    value="${plan}"
-                    onchange="updateCategoryBudget('${c.id}', this.value)"
-                    class="w-24 bg-transparent text-xs font-bold text-white text-right focus:outline-none"
-                  />
-                </div>
-              </div>
-            </div>
-          `;
-        }).join('');
-
-        return `
-          <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-            <div class="px-4 py-3 bg-slate-800/50 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2">
-              <div class="text-xs font-bold text-white">${g.label}</div>
-              <div class="text-xs text-slate-300">
-                Spent: <b class="text-white">${formatMoney(groupActual)}</b> / Planned: <b class="text-emerald-400">${formatMoney(groupPlanned)}</b>
-              </div>
-            </div>
-            <div class="divide-y divide-slate-800/60">
-              ${rowsHtml}
             </div>
           </div>
         `;
@@ -819,36 +709,23 @@
       renderAll();
     }
 
-    function updateCategoryBucket(catId, newBucket) {
-      const cat = categories.find(c => c.id === catId);
-      if (!cat) return;
-      cat.bucket = newBucket;
-      saveState();
-      renderAll();
-    }
-
+    // --- TRANSACTIONS LEDGER ---
     function renderTransactionsList(list) {
       const container = document.getElementById('transactionsList');
+      if (!container) return;
       document.getElementById('txCountBadge').textContent = `${list.length} ${list.length === 1 ? 'entry' : 'entries'}`;
 
       if (list.length === 0) {
         container.innerHTML = `
           <div class="p-8 text-center text-xs text-slate-500">
-            No transactions found for this filter. Tap <b>"＋ Log / Scan"</b> to add an entry or scan a receipt.
+            No transactions found for this filter. Tap <b>"＋ Log"</b> to add an entry.
           </div>`;
         return;
       }
 
-      const bucketBadgeMap = {
-        needs: '<span class="text-[10px] px-1.5 py-0.5 rounded bg-sky-500/15 text-sky-400">50% Needs</span>',
-        wants: '<span class="text-[10px] px-1.5 py-0.5 rounded bg-pink-500/15 text-pink-400">30% Wants</span>',
-        savings: '<span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400">20% Savings</span>'
-      };
-
       container.innerHTML = list.map(t => {
-        const cat = categories.find(c => c.id === t.categoryId) || { name: 'Uncategorized', icon: '🏷️', color: '#64748b', bucket: 'needs' };
+        const cat = categories.find(c => c.id === t.categoryId) || { name: 'Uncategorized', icon: '🏷️', color: '#64748b' };
         const isInc = t.type === 'income';
-        const bucketTag = !isInc && bucketBadgeMap[cat.bucket] ? bucketBadgeMap[cat.bucket] : '';
 
         return `
           <div class="px-4 py-3 flex items-center justify-between hover:bg-slate-800/40 transition gap-2">
@@ -859,8 +736,7 @@
               <div class="min-w-0">
                 <div class="flex items-center gap-2 flex-wrap">
                   <span class="text-xs font-semibold text-white truncate">${cat.name}</span>
-                  ${bucketTag}
-                  ${t.receiptImage ? `<button type="button" onclick="previewFullImage('${t.id}')" class="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 font-medium flex items-center gap-1 cursor-pointer">📷 Receipt</button>` : ''}
+                  ${t.receiptImage ? `<button type="button" onclick="previewFullImage('${t.id}')" class="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-medium cursor-pointer">📷 Receipt</button>` : ''}
                 </div>
                 <div class="text-[11px] text-slate-400 truncate">${t.note || 'No description'} • ${t.date}</div>
               </div>
@@ -876,6 +752,7 @@
       }).join('');
     }
 
+    // --- RECEIPT CAMERA & OCR ---
     function handleReceiptUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -1046,6 +923,7 @@
       modal.classList.remove('hidden');
     }
 
+    // --- CHARTS ---
     function setPieMode(mode) {
       currentPieMode = mode;
       const btnExp = document.getElementById('pieToggleExpense');
@@ -1195,6 +1073,7 @@
       }
     }
 
+    // --- TRANSACTION MODAL ACTIONS ---
     function openTransactionModal() {
       document.getElementById('editingTxId').value = '';
       document.getElementById('txModalTitle').textContent = 'Log Transaction';
@@ -1247,11 +1126,7 @@
 
       const catSelect = document.getElementById('txCategory');
       const filteredCats = categories.filter(c => (c.type || 'expense') === type);
-      catSelect.innerHTML = filteredCats.map(c => {
-        const bName = (c.bucket || 'needs').toUpperCase();
-        const tag = c.type === 'expense' ? ` [${bName}]` : '';
-        return `<option value="${c.id}">${c.icon || '🏷️'} ${c.name}${tag}</option>`;
-      }).join('');
+      catSelect.innerHTML = filteredCats.map(c => `<option value="${c.id}">${c.icon || '🏷️'} ${c.name}</option>`).join('');
     }
 
     function saveTransaction(e) {
@@ -1267,26 +1142,10 @@
       if (editingId) {
         const idx = transactions.findIndex(t => t.id === editingId);
         if (idx > -1) {
-          transactions[idx] = {
-            ...transactions[idx],
-            type: currentTxType,
-            amount,
-            categoryId,
-            date,
-            note,
-            receiptImage: currentReceiptDataUrl
-          };
+          transactions[idx] = { ...transactions[idx], type: currentTxType, amount, categoryId, date, note, receiptImage: currentReceiptDataUrl };
         }
       } else {
-        transactions.push({
-          id: 'tx_' + Date.now(),
-          type: currentTxType,
-          amount,
-          categoryId,
-          date,
-          note,
-          receiptImage: currentReceiptDataUrl
-        });
+        transactions.push({ id: 'tx_' + Date.now(), type: currentTxType, amount, categoryId, date, note, receiptImage: currentReceiptDataUrl });
       }
 
       saveState();
@@ -1312,10 +1171,6 @@
       document.getElementById('catModal').classList.add('hidden');
     }
 
-    function toggleNewCatBucket(type) {
-      document.getElementById('newCatBucketWrap').style.display = type === 'income' ? 'none' : 'block';
-    }
-
     function renderCategoriesList() {
       const list = document.getElementById('customCategoriesList');
       list.innerHTML = categories.map(c => `
@@ -1324,15 +1179,11 @@
             <span class="w-8 h-8 rounded-lg flex items-center justify-center text-sm shrink-0" style="background:${c.color}22; border:1px solid ${c.color}55">${c.icon || '🏷️'}</span>
             <div class="min-w-0">
               <div class="font-semibold text-white truncate">${c.name}</div>
-              <div class="text-[10px] text-slate-400">
-                ${c.type === 'income' ? '<span class="text-emerald-400">REVENUE</span>' : `<span class="uppercase text-sky-400">${c.bucket || 'needs'}</span> • Planned: ${formatMoney(c.budget || 0)}`}
-              </div>
+              <div class="text-[10px] text-slate-400">${c.type === 'income' ? '<span class="text-emerald-400">REVENUE</span>' : `Planned: ${formatMoney(c.budget || 0)}`}</div>
             </div>
           </div>
           <div class="flex items-center gap-2 shrink-0">
-            ${c.type === 'expense' ? `
-              <input type="number" value="${c.budget || 0}" onchange="updateCategoryBudget('${c.id}', this.value)" class="w-24 bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-right text-xs text-white" />
-            ` : ''}
+            ${c.type === 'expense' ? `<input type="number" value="${c.budget || 0}" onchange="updateCategoryBudget('${c.id}', this.value)" class="w-24 bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-right text-xs text-white" />` : ''}
             <button type="button" onclick="deleteCategory('${c.id}')" class="text-slate-500 hover:text-rose-400 px-1.5 cursor-pointer">✕</button>
           </div>
         </div>
@@ -1343,13 +1194,12 @@
       e.preventDefault();
       const name = document.getElementById('newCatName').value.trim();
       const type = document.getElementById('newCatType').value;
-      const bucket = type === 'income' ? 'income' : document.getElementById('newCatBucket').value;
       const budget = parseFloat(document.getElementById('newCatBudget').value) || 0;
       const icon = document.getElementById('newCatIcon').value.trim() || '🏷️';
       const color = document.getElementById('newCatColor').value;
 
       if (!name) return;
-      categories.push({ id: 'cat_' + Date.now(), name, type, bucket, budget, icon, color });
+      categories.push({ id: 'cat_' + Date.now(), name, type, budget, icon, color });
       saveState();
       document.getElementById('newCatName').value = '';
       document.getElementById('newCatBudget').value = '0';
@@ -1368,19 +1218,10 @@
 
     function exportCSV() {
       if (transactions.length === 0) return alert('No transactions to export.');
-      const headers = ['Date', 'Type', '50_30_20_Bucket', 'Category', 'Amount', 'Currency', 'Note', 'Has_Receipt'];
+      const headers = ['Date', 'Type', 'Category', 'Amount', 'Currency', 'Note'];
       const rows = transactions.map(t => {
         const cat = categories.find(c => c.id === t.categoryId);
-        return [
-          t.date,
-          t.type,
-          cat ? (cat.bucket || '') : '',
-          `"${cat ? cat.name : 'Uncategorized'}"`,
-          t.amount,
-          currentCurrency,
-          `"${(t.note || '').replace(/"/g, '""')}"`,
-          t.receiptImage ? 'Yes' : 'No'
-        ].join(',');
+        return [t.date, t.type, `"${cat ? cat.name : 'Uncategorized'}"`, t.amount, currentCurrency, `"${(t.note || '').replace(/"/g, '""')}"`].join(',');
       });
       const csv = [headers.join(','), ...rows].join('\n');
       downloadFile(csv, `kashflow_export_${new Date().toISOString().slice(0,10)}.csv`, 'text/csv');
