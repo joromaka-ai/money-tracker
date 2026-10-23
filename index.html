@@ -62,7 +62,6 @@
 
     <!-- ==================== PAGE 1: DASHBOARD ==================== -->
     <div id="pageDashboard" class="space-y-4">
-      <!-- Clickable KPI Summary Cards -->
       <section class="grid grid-cols-2 gap-3">
         <div onclick="navigateToRevenueLedger()" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 cursor-pointer hover:border-emerald-500/50 transition group">
           <div class="text-xs text-slate-400 mb-1 flex items-center justify-between">
@@ -95,7 +94,6 @@
         </div>
       </section>
 
-      <!-- Visual Analytics Charts -->
       <section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between">
           <div class="flex items-center justify-between mb-3">
@@ -245,7 +243,7 @@
     </div>
   </nav>
 
-  <!-- ==================== MODAL: ADD / SCAN TRANSACTION ==================== -->
+  <!-- ==================== MODAL: ADD TRANSACTION ==================== -->
   <div id="txModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto">
     <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-t-3xl sm:rounded-2xl p-5 space-y-3.5 my-auto max-h-[92vh] overflow-y-auto">
       <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
@@ -253,7 +251,6 @@
         <button type="button" onclick="closeTransactionModal()" class="text-slate-400 hover:text-white text-lg">✕</button>
       </div>
 
-      <!-- RECEIPT CAMERA & OCR -->
       <div class="bg-slate-800/70 border border-dashed border-slate-700 rounded-2xl p-3 space-y-2.5">
         <div class="flex items-center justify-between gap-2">
           <div>
@@ -432,13 +429,17 @@
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
-      document.getElementById('installAppBtn').classList.remove('hidden');
+      const btn = document.getElementById('installAppBtn');
+      if (btn) btn.classList.remove('hidden');
     });
     async function triggerInstall() {
       if (!deferredPrompt) return;
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') document.getElementById('installAppBtn').classList.add('hidden');
+      if (outcome === 'accepted') {
+        const btn = document.getElementById('installAppBtn');
+        if (btn) btn.classList.add('hidden');
+      }
       deferredPrompt = null;
     }
 
@@ -446,7 +447,7 @@
     const STORAGE_KEY_CAT = 'kashflow_categories_v1';
     const STORAGE_KEY_CUR = 'kashflow_currency_v1';
     const STORAGE_KEY_TRIPS = 'kashflow_trips_v1';
-    const STORAGE_KEY_SEEDED = 'kashflow_budget_seeded_v6';
+    const STORAGE_KEY_SEEDED = 'kashflow_budget_seeded_v7';
 
     const USER_BUDGET_CATEGORIES = [
       { id: 'b_rent', name: 'Rent', type: 'expense', budget: 500000, icon: '🏠', color: '#6366f1' },
@@ -544,14 +545,23 @@
     let barChartInstance = null;
 
     window.addEventListener('DOMContentLoaded', () => {
-      ensureBudgetCategoriesSeeded();
-      document.getElementById('currencySelect').value = currentCurrency;
-      document.getElementById('modalCurrencyLabel').textContent = currentCurrency;
-      document.getElementById('tripCurrencyLabel').textContent = currentCurrency;
-      document.getElementById('txDate').valueAsDate = new Date();
-      document.getElementById('tripStart').valueAsDate = new Date();
-      populateMonthFilter();
-      renderAll();
+      try {
+        ensureBudgetCategoriesSeeded();
+        const curSel = document.getElementById('currencySelect');
+        if (curSel) curSel.value = currentCurrency;
+        const modCur = document.getElementById('modalCurrencyLabel');
+        if (modCur) modCur.textContent = currentCurrency;
+        const tripCur = document.getElementById('tripCurrencyLabel');
+        if (tripCur) tripCur.textContent = currentCurrency;
+        const txDate = document.getElementById('txDate');
+        if (txDate) txDate.valueAsDate = new Date();
+        const tripStart = document.getElementById('tripStart');
+        if (tripStart) tripStart.valueAsDate = new Date();
+        populateMonthFilter();
+        renderAll();
+      } catch (err) {
+        console.error("Init error:", err);
+      }
     });
 
     function saveState() {
@@ -561,7 +571,7 @@
         localStorage.setItem(STORAGE_KEY_TRIPS, JSON.stringify(trips));
         localStorage.setItem(STORAGE_KEY_CUR, currentCurrency);
       } catch (e) {
-        alert('Storage limit reached! Export a backup or remove old receipt photos.');
+        alert('Storage limit reached!');
       }
     }
 
@@ -584,21 +594,21 @@
 
     function changeCurrency(val) {
       currentCurrency = val;
-      document.getElementById('modalCurrencyLabel').textContent = val;
-      document.getElementById('tripCurrencyLabel').textContent = val;
+      const modCur = document.getElementById('modalCurrencyLabel');
+      if (modCur) modCur.textContent = val;
+      const tripCur = document.getElementById('tripCurrencyLabel');
+      if (tripCur) tripCur.textContent = val;
       saveState();
       renderAll();
     }
 
-    // --- MULTI-PAGE ROUTER ---
     function switchPage(page) {
       currentPage = page;
       const pages = ['dashboard', 'budget', 'trips', 'ledger', 'settings'];
       const titles = { dashboard: 'Dashboard Overview', budget: 'Budget & Sliders', trips: 'Travel Mode & Trips', ledger: 'Transaction Ledger', settings: 'Settings & Data' };
 
       pages.forEach(p => {
-        const el = document.getElementById(`page${p.charAt(0).toUpperCase() + p.slice(1)}`);
-        const nav = document.getElementById(`navBtn${p.charAt(0).toUpperCase() + p.slice(1)}`);
+        const el = document.getElementById(`page${p.charAt(0).toUpperCase() + p.slice(1)}`); const nav = document.getElementById(`navBtn${p.charAt(0).toUpperCase() + p.slice(1)}`);
         if (el) el.classList.toggle('hidden', p !== page);
         if (nav) {
           nav.className = p === page
@@ -607,7 +617,8 @@
         }
       });
 
-      document.getElementById('currentPageTitle').textContent = titles[page] || '';
+      const titleEl = document.getElementById('currentPageTitle');
+      if (titleEl) titleEl.textContent = titles[page] || '';
       window.scrollTo(0, 0);
       renderAll();
     }
@@ -635,44 +646,66 @@
       sorted.forEach(m => {
         const [y, mo] = m.split('-');
         const label = new Date(y, mo - 1, 1).toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
-        select.innerHTML += `<option value="${m}">${label}${m === currentMonthKey ? ' (Current)' : ''}</option>`;
-      });
+        select.innerHTML += `<option value="${m}">${label}${m === currentMonthKey ? ' (Current)' : ''}</option>`; });  select.value = prev && [...select.options].some(o => o.value === prev) ? prev : currentMonthKey; }  function getFilteredTransactions() { const typeEl = document.getElementById('typeFilter'); const searchEl = document.getElementById('searchInput');  const type = typeEl ? typeEl.value : 'ALL'; const query = searchEl ? searchEl.value.trim().toLowerCase() : ''; const monthEl = document.getElementById('monthFilter'); const month = monthEl ? monthEl.value : 'ALL';  return transactions.filter(t => { if (!t) return false; if (month !== 'ALL' && (!t.date \vert{}\vert{} !t.date.startsWith(month))) return false; if (type === 'RECEIPT') { if (!t.receiptImage) return false; } else if (type !== 'ALL' && t.type !== type) { return false; } if (query) { const cat = categories.find(c => c.id === t.categoryId); const catName = cat && cat.name ? cat.name.toLowerCase() : ''; const note = (t.note \vert{}\vert{} '').toLowerCase(); if (!catName.includes(query) && !note.includes(query)) return false; } return true; }).sort((a, b) => new Date(b.date) - new Date(a.date)); }  function renderAll() { try { const monthEl = document.getElementById('monthFilter'); const month = monthEl ? monthEl.value : 'ALL'; const periodTx = transactions.filter(t => t && (month === 'ALL' \vert{}\vert{} (t.date && t.date.startsWith(month))));  let totalIn = 0, totalOut = 0, savingsActual = 0; periodTx.forEach(t => { if (t.type === 'income') { totalIn += Number(t.amount \vert{}\vert{} 0); } else { totalOut += Number(t.amount \vert{}\vert{} 0); const cat = categories.find(c => c.id === t.categoryId); if (cat && (cat.name.toLowerCase().includes('emergency') \vert{}\vert{} cat.name.toLowerCase().includes('invest') \vert{}\vert{} cat.name.toLowerCase().includes('debt'))) { savingsActual += Number(t.amount \vert{}\vert{} 0); } } });  const totalPlanned = categories .filter(c => c.type === 'expense') .reduce((sum, c) => sum + Number(c.budget \vert{}\vert{} 0), 0);  const remainingBalance = totalIn - totalOut; const budgetRemaining = totalPlanned - totalOut; const denominator = totalIn > 0 ? totalIn : totalPlanned; const savingsRate = denominator > 0 ? Math.round((savingsActual / denominator) * 100) : 0;  const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };  setTxt('totalIncomeDisplay', formatMoney(totalIn)); setTxt('totalExpenseDisplay', formatMoney(totalOut)); setTxt('plannedBudgetDisplay', formatMoney(totalPlanned)); setTxt('netBalanceDisplay', formatMoney(remainingBalance));  const remEl = document.getElementById('budgetRemainingSubtext'); if (remEl) { if (budgetRemaining >= 0) { remEl.textContent = `${formatMoney(budgetRemaining)} under planned budget`;
+            remEl.className = 'text-[10px] text-emerald-400 mt-0.5';
+          } else {
+            remEl.textContent = `${formatMoney(Math.abs(budgetRemaining))} over planned budget`;
+            remEl.className = 'text-[10px] text-rose-400 font-semibold mt-0.5';
+          }
+        }
 
-      select.value = prev && [...select.options].some(o => o.value === prev) ? prev : currentMonthKey;
+        setTxt('savingsRateBadge', `${savingsRate}% allocated to savings/debt`);
+
+        renderCategorySliders(periodTx);
+        renderTripsList();
+        populateTripDropdown();
+
+        if (currentPage === 'dashboard') {
+          renderPieChart(periodTx);
+          renderBarChart();
+        } else if (currentPage === 'ledger') {
+          renderTransactionsList(getFilteredTransactions());
+        }
+      } catch (err) {
+        console.error("renderAll error:", err);
+      }
     }
 
-    function getFilteredTransactions() {
-      const typeEl = document.getElementById('typeFilter');
-      const searchEl = document.getElementById('searchInput');
+    function renderCategorySliders(periodTx) {
+      const container = document.getElementById('categorySlidersContainer');
+      if (!container) return;
 
-      const type = typeEl ? typeEl.value : 'ALL';
-      const query = searchEl ? searchEl.value.trim().toLowerCase() : '';
-      const monthEl = document.getElementById('monthFilter');
-      const month = monthEl ? monthEl.value : 'ALL';
+      const expenseCats = categories.filter(c => c.type === 'expense');
 
-      return transactions.filter(t => {
-        if (!t) return false;
-        if (month !== 'ALL' && (!t.date || !t.date.startsWith(month))) return false;
-        if (type === 'RECEIPT') {
-          if (!t.receiptImage) return false;
-        } else if (type !== 'ALL' && t.type !== type) {
-          return false;
-        }
-        if (query) {
-          const cat = categories.find(c => c.id === t.categoryId);
-          const catName = cat && cat.name ? cat.name.toLowerCase() : '';
-          const note = (t.note || '').toLowerCase();
-          if (!catName.includes(query) && !note.includes(query)) return false;
-        }
-        return true;
-      }).sort((a, b) => new Date(b.date) - new Date(a.date));
-    }
+      container.innerHTML = expenseCats.map(c => {
+        const spent = periodTx
+          .filter(t => t.type === 'expense' && t.categoryId === c.id)
+          .reduce((s, t) => s + Number(t.amount || 0), 0);
+        const plan = Number(c.budget || 0);
+        const pct = plan > 0 ? Math.min(100, Math.round((spent / plan) * 100)) : (spent > 0 ? 100 : 0);
+        const isOver = spent > plan && plan > 0;
+        const barColor = isOver ? 'bg-rose-500' : (pct >= 85 ? 'bg-amber-400' : 'bg-emerald-500');
 
-    function renderAll() {
-      const monthEl = document.getElementById('monthFilter');
-      const month = monthEl ? monthEl.value : 'ALL';
-      const periodTx = transactions.filter(t => t && (month === 'ALL' || (t.date && t.date.startsWith(month))));
+        return `
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <span class="w-8 h-8 rounded-lg flex items-center justify-center text-sm shrink-0" style="background:${c.color}22; border:1px solid ${c.color}55">${c.icon || '🏷️'}</span>
+                <span class="text-xs font-bold text-white truncate">${c.name}</span>
+              </div>
+              <div class="text-right shrink-0">
+                <span class="text-xs font-bold ${isOver ? 'text-rose-400' : 'text-white'}">${formatMoney(spent)}</span>
+                <span class="text-[11px] text-slate-400"> / Plan: ${formatMoney(plan)}</span>
+              </div>
+            </div>
 
-      let totalIn = 0, totalOut = 0, savingsActual = 0;
-      periodTx.forEach(t => {
-        if (t.type
+            <div class="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden">
+              <div class="h-full ${barColor} transition-all duration-300" style="width: ${pct}%"></div>
+            </div>
+
+            <div class="flex items-center justify-between text-[11px] text-slate-400">
+              <span class="${isOver ? 'text-rose-400 font-bold' : ''}">${pct}\% used${isOver ? '⚠️ (Over Budget!)' : ''}</span>
+              <div class="flex items-center gap-1.5">
+                <span>Edit Target:</span>
+                <input
+                  type="number"
